@@ -484,7 +484,19 @@ impl ActionsConfig {
     }
 
     /// Shells that are allowed for action execution.
-    const ALLOWED_SHELLS: &[&str] = &["/bin/sh", "/bin/bash", "sh", "bash", "/usr/bin/env", "cmd", "cmd.exe", "powershell", "powershell.exe", "pwsh", "pwsh.exe"];
+    const ALLOWED_SHELLS: &[&str] = &[
+        "/bin/sh",
+        "/bin/bash",
+        "sh",
+        "bash",
+        "/usr/bin/env",
+        "cmd",
+        "cmd.exe",
+        "powershell",
+        "powershell.exe",
+        "pwsh",
+        "pwsh.exe",
+    ];
 
     /// Validate the configuration and return a list of warning/error messages.
     #[must_use]

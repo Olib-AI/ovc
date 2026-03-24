@@ -877,7 +877,19 @@ async fn read_pipe<R: tokio::io::AsyncRead + Unpin>(pipe: Option<R>) -> Vec<u8> 
 }
 
 /// Shells that are allowed for action execution.
-const ALLOWED_SHELLS: &[&str] = &["/bin/sh", "/bin/bash", "sh", "bash", "/usr/bin/env", "cmd", "cmd.exe", "powershell", "powershell.exe", "pwsh", "pwsh.exe"];
+const ALLOWED_SHELLS: &[&str] = &[
+    "/bin/sh",
+    "/bin/bash",
+    "sh",
+    "bash",
+    "/usr/bin/env",
+    "cmd",
+    "cmd.exe",
+    "powershell",
+    "powershell.exe",
+    "pwsh",
+    "pwsh.exe",
+];
 
 /// Validate that the configured shell is in the allowlist.
 fn validate_shell(shell: &str) -> ActionsResult<()> {

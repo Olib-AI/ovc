@@ -486,10 +486,10 @@ mod tests {
         // Verify working directory was checked out.
         let hello_path = export_dir.join("hello.txt");
         assert!(hello_path.exists());
-        assert_eq!(
-            std::fs::read_to_string(&hello_path).unwrap(),
-            "hello world\n"
-        );
+        let content = std::fs::read_to_string(&hello_path).unwrap();
+        // Normalize line endings for Windows compatibility.
+        let normalized = content.replace("\r\n", "\n");
+        assert_eq!(normalized, "hello world\n");
 
         // Verify the exported git repo has valid refs.
         let export_git_dir = export_dir.join(".git");
