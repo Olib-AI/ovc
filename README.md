@@ -40,7 +40,7 @@ Modern teams need version control they fully own — without giving up the conve
 - **Single binary** — VCS + crypto + git bridge + cloud sync + actions engine + web server + React UI
 - **Access control (RBAC)** — per-user roles (read, write, admin, owner) with branch protection
 - **Memory-safe** — `unsafe_code = "forbid"` workspace-wide; keys zeroed on drop via `zeroize`
-- **Security-audited** — 27 security, performance, and robustness issues identified and fixed across 5 audit passes
+- **Security-hardened** — constant-time auth, secret zeroization, path traversal protection, bounded resource allocation
 
 ---
 
@@ -503,7 +503,7 @@ Your Key Pair (Ed25519 + X25519)
            +--- XChaCha20-Poly1305 encrypts all data (192-bit nonce per segment)
 ```
 
-### Security hardening (27 issues fixed across 5 audit passes)
+### Security hardening
 
 - Constant-time authentication (no timing side-channels)
 - Secrets zeroed on drop via `Zeroizing<T>` wrappers
