@@ -252,6 +252,30 @@ section{padding:100px 0}
   line-height:1.6;font-weight:300;
 }
 
+/* ── Screenshots ───────────────────────────────────────────── */
+.screenshots-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:16px;
+}
+@media(max-width:700px){.screenshots-grid{grid-template-columns:1fr}}
+.screenshot{
+  border-radius:10px;
+  border:1px solid var(--border);
+  overflow:hidden;
+  transition:border-color 0.3s,transform 0.3s;
+  position:relative;
+}
+.screenshot:hover{border-color:var(--cyan-dim);transform:translateY(-2px)}
+.screenshot img{width:100%;height:auto;display:block}
+.screenshot-label{
+  padding:10px 16px;
+  background:var(--bg-elevated);
+  font-size:0.75rem;color:var(--text-secondary);
+  font-family:var(--font-mono);letter-spacing:0.03em;
+  border-top:1px solid var(--border);
+}
+
 /* ── How it works ──────────────────────────────────────────── */
 .steps{display:flex;gap:32px;counter-reset:step}
 @media(max-width:700px){.steps{flex-direction:column}}
@@ -451,6 +475,7 @@ footer{
     <a href="#" class="nav-logo"><span>ovc</span></a>
     <div class="nav-links">
       <a href="#features">Features</a>
+      <a href="#screenshots">Screenshots</a>
       <a href="#how-it-works">How It Works</a>
       <a href="#security">Security</a>
       <a href="#quickstart">Quick Start</a>
@@ -587,6 +612,36 @@ footer{
         </div>
         <h3>Single 16 MB binary</h3>
         <p>VCS + crypto + git bridge + cloud sync + CI engine + web server + React UI. No runtime dependencies.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Screenshots ──────────────────────────────────────────── -->
+<section id="screenshots" style="background:var(--bg-primary)">
+  <div class="container">
+    <span class="section-label">Web UI</span>
+    <h2 class="section-title">A premium interface, embedded in the binary</h2>
+    <p class="section-desc">
+      No Node.js required in production. The entire React UI compiles into the binary and serves on localhost.
+    </p>
+
+    <div class="screenshots-grid">
+      <div class="screenshot fade-in">
+        <img src="https://raw.githubusercontent.com/Olib-AI/ovc/main/examples/changes.png" alt="Staged changes and diff viewer" loading="lazy">
+        <div class="screenshot-label">Staged changes with inline diff viewer</div>
+      </div>
+      <div class="screenshot fade-in">
+        <img src="https://raw.githubusercontent.com/Olib-AI/ovc/main/examples/actions.png" alt="Actions CI/CD dashboard" loading="lazy">
+        <div class="screenshot-label">Built-in CI/CD actions dashboard</div>
+      </div>
+      <div class="screenshot fade-in">
+        <img src="https://raw.githubusercontent.com/Olib-AI/ovc/main/examples/file-manager.png" alt="File manager and code browser" loading="lazy">
+        <div class="screenshot-label">File manager with code preview</div>
+      </div>
+      <div class="screenshot fade-in">
+        <img src="https://raw.githubusercontent.com/Olib-AI/ovc/main/examples/dependency-update.png" alt="Dependency updates dashboard" loading="lazy">
+        <div class="screenshot-label">Dependency updates dashboard</div>
       </div>
     </div>
   </div>

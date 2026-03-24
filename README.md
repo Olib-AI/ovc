@@ -526,6 +526,14 @@ ovc web                    # Opens browser automatically
 
 The web UI is embedded in the binary — no Node.js required in production.
 
+| Staged Changes & Diff Viewer | Actions Dashboard |
+|:---:|:---:|
+| ![Changes](examples/changes.png) | ![Actions](examples/actions.png) |
+
+| File Manager | Dependency Updates |
+|:---:|:---:|
+| ![File Manager](examples/file-manager.png) | ![Dependencies](examples/dependency-update.png) |
+
 **Features:**
 - Commit graph with SVG branch lanes and colored edges
 - Split and unified diff viewer with line numbers
@@ -538,6 +546,7 @@ The web UI is embedded in the binary — no Node.js required in production.
 - Staged changes with click-to-diff
 - Commit form with author pre-fill
 - Actions dashboard with run history and clear button
+- Dependency updates dashboard
 - Reflog viewer
 - Toast notifications for all operations
 - Dark theme with cyan accents
