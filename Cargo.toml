@@ -57,8 +57,8 @@ anyhow = "1"
 
 # CLI
 clap = { version = "4", features = ["derive", "env", "string"] }
-console = "0.15"
-dialoguer = "0.11"
+console = "0.16"
+dialoguer = "0.12"
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
 
 # Async & networking
@@ -76,7 +76,7 @@ tower = "0.5"
 tower-http = { version = "0.6", features = ["cors", "compression-full", "trace", "set-header"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-jsonwebtoken = "9"
+jsonwebtoken = "10"
 
 # Static file embedding
 rust-embed = "8"
@@ -89,7 +89,7 @@ globset = "0.4"
 
 # Archive formats
 tar = "0.4"
-zip = { version = "2", default-features = false, features = ["deflate"] }
+zip = { version = "8", default-features = false, features = ["deflate"] }
 
 # Internal crates
 ovc-core = { path = "crates/ovc-core" }
