@@ -181,10 +181,11 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Download all artifacts
+      - name: Download binary artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts/
+          pattern: ovc-*
           merge-multiple: true
 
       - name: Generate SHA256 checksums
