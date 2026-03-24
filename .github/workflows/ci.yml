@@ -94,6 +94,8 @@ jobs:
     name: Release Build
     needs: [check, clippy, fmt, test]
     runs-on: ${{ matrix.os }}
+    env:
+      RUSTFLAGS: ${{ matrix.os == 'windows-latest' && '-C target-feature=+crt-static' || '' }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]

@@ -126,6 +126,8 @@ jobs:
             artifact: ovc-windows-amd64.exe
             use_cross: false
     runs-on: ${{ matrix.os }}
+    env:
+      RUSTFLAGS: ${{ matrix.os == 'windows-latest' && '-C target-feature=+crt-static' || '' }}
     steps:
       - uses: actions/checkout@v4
 
