@@ -589,7 +589,7 @@ fn step_daemon() -> Result<bool> {
 
     let items = &["Yes", "No"];
     let selection = Select::new()
-        .with_prompt("  Install launch daemon?")
+        .with_prompt("  Install background service?")
         .items(items)
         .default(0)
         .interact()
@@ -660,14 +660,33 @@ fn write_shell_config(
     );
 
     // Inform the user how to set their passphrase securely.
-    println!(
-        "\n  \u{26a0}  OVC_KEY_PASSPHRASE was NOT written to your shell config.\n\
-         \n  To set it securely, use your system keychain:\n\
-         \n    macOS:   security add-generic-password -s ovc -a \"{}\" -w\n\
-         \n  Or enter it interactively each time ovc prompts for it.\n\
-         \n  OVC_JWT_SECRET is auto-generated and persisted by the server — no manual setup needed.",
-        key.key_name,
-    );
+    if cfg!(target_os = "macos") {
+        println!(
+            "\n  \u{26a0}  OVC_KEY_PASSPHRASE was NOT written to your shell config.\n\
+             \n  To set it securely, use your system keychain:\n\
+             \n    security add-generic-password -s ovc -a \"{}\" -w\n\
+             \n  Or enter it interactively each time ovc prompts for it.\n\
+             \n  OVC_JWT_SECRET is auto-generated and persisted by the server — no manual setup needed.",
+            key.key_name,
+        );
+    } else if cfg!(target_os = "linux") {
+        println!(
+            "\n  \u{26a0}  OVC_KEY_PASSPHRASE was NOT written to your shell config.\n\
+             \n  To set it securely, use GNOME Keyring (secret-tool):\n\
+             \n    secret-tool store --label='OVC Key' service ovc account \"{}\"\n\
+             \n  Or store it in your preferred password manager.\n\
+             \n  Or enter it interactively each time ovc prompts for it.\n\
+             \n  OVC_JWT_SECRET is auto-generated and persisted by the server — no manual setup needed.",
+            key.key_name,
+        );
+    } else {
+        println!(
+            "\n  \u{26a0}  OVC_KEY_PASSPHRASE was NOT written to your shell config.\n\
+             \n  Store it in your preferred password manager.\n\
+             \n  Or enter it interactively each time ovc prompts for it.\n\
+             \n  OVC_JWT_SECRET is auto-generated and persisted by the server — no manual setup needed.",
+        );
+    }
 
     let config_path = &shell_config;
 
@@ -753,8 +772,29 @@ fn detect_shell_config(home: &Path) -> PathBuf {
 
 // ── Daemon Install ───────────────────────────────────────────────────
 
-/// Installs the daemon using the same mechanism as `ovc daemon install`.
+/// Installs the daemon using the platform-appropriate service manager.
+///
+/// - macOS: creates a `LaunchAgent` plist and loads it with `launchctl`.
+/// - Linux: creates a systemd user service and enables it.
+/// - Other: prints a warning and skips installation.
 fn install_daemon_service(port: u16) -> Result<()> {
+    if cfg!(target_os = "macos") {
+        install_daemon_macos(port)
+    } else if cfg!(target_os = "linux") {
+        install_daemon_linux(port)
+    } else {
+        let yellow = Style::new().yellow();
+        println!(
+            "\n  {} Automatic daemon installation is not supported on this platform.",
+            yellow.apply_to("!"),
+        );
+        println!("  Run `ovc serve --port {port}` manually to start the server.");
+        Ok(())
+    }
+}
+
+/// macOS: installs the daemon as a `LaunchAgent` plist.
+fn install_daemon_macos(port: u16) -> Result<()> {
     let binary_path = std::env::current_exe()
         .context("failed to determine current executable path")?
         .to_string_lossy()
@@ -788,6 +828,49 @@ fn install_daemon_service(port: u16) -> Result<()> {
     if !load_output.status.success() {
         let stderr = String::from_utf8_lossy(&load_output.stderr);
         anyhow::bail!("launchctl load failed: {stderr}");
+    }
+
+    Ok(())
+}
+
+/// Linux: installs the daemon as a systemd user service.
+fn install_daemon_linux(port: u16) -> Result<()> {
+    let binary_path = std::env::current_exe()
+        .context("failed to determine current executable path")?
+        .to_string_lossy()
+        .into_owned();
+
+    let home = dirs::home_dir().context("cannot determine home directory")?;
+    let systemd_dir = home.join(".config/systemd/user");
+    std::fs::create_dir_all(&systemd_dir)
+        .context("failed to create ~/.config/systemd/user directory")?;
+
+    let service_path = systemd_dir.join("ovc-server.service");
+
+    let unit_content = generate_systemd_unit(&binary_path, port);
+    std::fs::write(&service_path, &unit_content)
+        .with_context(|| format!("failed to write service file to {}", service_path.display()))?;
+
+    // Reload systemd user daemon so it picks up the new/changed unit file.
+    let reload_output = std::process::Command::new("systemctl")
+        .args(["--user", "daemon-reload"])
+        .output()
+        .context("failed to run systemctl --user daemon-reload")?;
+
+    if !reload_output.status.success() {
+        let stderr = String::from_utf8_lossy(&reload_output.stderr);
+        anyhow::bail!("systemctl --user daemon-reload failed: {stderr}");
+    }
+
+    // Enable and start the service.
+    let enable_output = std::process::Command::new("systemctl")
+        .args(["--user", "enable", "--now", "ovc-server"])
+        .output()
+        .context("failed to run systemctl --user enable --now ovc-server")?;
+
+    if !enable_output.status.success() {
+        let stderr = String::from_utf8_lossy(&enable_output.stderr);
+        anyhow::bail!("systemctl --user enable --now ovc-server failed: {stderr}");
     }
 
     Ok(())
@@ -868,6 +951,51 @@ fn xml_escape(s: &str) -> String {
         .replace('>', "&gt;")
         .replace('"', "&quot;")
         .replace('\'', "&apos;")
+}
+
+/// Generates a systemd user service unit for the OVC server.
+///
+/// Environment variables that are set at onboard time are forwarded into the
+/// unit so the server inherits the same configuration the user's shell would
+/// have.
+fn generate_systemd_unit(binary_path: &str, port: u16) -> String {
+    use std::fmt::Write as _;
+
+    const ENV_VARS: &[&str] = &[
+        "OVC_KEY",
+        "OVC_KEY_PASSPHRASE",
+        "OVC_REPOS_DIR",
+        "OVC_WORKDIR_MAP",
+        "OVC_WORKDIR_SCAN",
+        "OVC_AUTHOR_NAME",
+        "OVC_AUTHOR_EMAIL",
+        "OVC_SIGN_COMMITS",
+        "OVC_JWT_SECRET",
+        "OVC_CORS_ORIGINS",
+        "HOME",
+    ];
+
+    let mut env_lines = String::new();
+    for &var in ENV_VARS {
+        if let Ok(val) = std::env::var(var) {
+            let _ = writeln!(env_lines, "Environment={var}={val}");
+        }
+    }
+
+    format!(
+        "[Unit]\n\
+         Description=OVC Server\n\
+         After=default.target\n\
+         \n\
+         [Service]\n\
+         ExecStart={binary_path} serve --port {port}\n\
+         Restart=on-failure\n\
+         RestartSec=5\n\
+         {env_lines}\
+         \n\
+         [Install]\n\
+         WantedBy=default.target\n"
+    )
 }
 
 // ── Summary ──────────────────────────────────────────────────────────
