@@ -649,7 +649,14 @@ impl ActionRunner {
         // which only inherits a minimal PATH.
         #[cfg(target_os = "macos")]
         cmd.arg("-l");
-        cmd.arg("-c").arg(command);
+        // Windows cmd.exe uses /c, PowerShell uses -Command, Unix shells use -c.
+        if shell == "cmd" || shell == "cmd.exe" {
+            cmd.arg("/c").arg(command);
+        } else if shell.contains("powershell") || shell.contains("pwsh") {
+            cmd.arg("-Command").arg(command);
+        } else {
+            cmd.arg("-c").arg(command);
+        }
         cmd.current_dir(work_dir);
 
         // Enrich PATH with common tool directories so actions can find
@@ -870,7 +877,7 @@ async fn read_pipe<R: tokio::io::AsyncRead + Unpin>(pipe: Option<R>) -> Vec<u8> 
 }
 
 /// Shells that are allowed for action execution.
-const ALLOWED_SHELLS: &[&str] = &["/bin/sh", "/bin/bash", "sh", "bash", "/usr/bin/env"];
+const ALLOWED_SHELLS: &[&str] = &["/bin/sh", "/bin/bash", "sh", "bash", "/usr/bin/env", "cmd", "cmd.exe", "powershell", "powershell.exe", "pwsh", "pwsh.exe"];
 
 /// Validate that the configured shell is in the allowlist.
 fn validate_shell(shell: &str) -> ActionsResult<()> {

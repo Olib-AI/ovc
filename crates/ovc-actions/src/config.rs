@@ -150,7 +150,11 @@ const SAFE_DOCKER_FLAG_PREFIXES: &[&str] = &[
 ];
 
 fn default_shell() -> String {
-    "/bin/sh".to_owned()
+    if cfg!(target_os = "windows") {
+        "cmd".to_owned()
+    } else {
+        "/bin/sh".to_owned()
+    }
 }
 
 const fn default_timeout() -> u64 {
@@ -480,7 +484,7 @@ impl ActionsConfig {
     }
 
     /// Shells that are allowed for action execution.
-    const ALLOWED_SHELLS: &[&str] = &["/bin/sh", "/bin/bash", "sh", "bash", "/usr/bin/env"];
+    const ALLOWED_SHELLS: &[&str] = &["/bin/sh", "/bin/bash", "sh", "bash", "/usr/bin/env", "cmd", "cmd.exe", "powershell", "powershell.exe", "pwsh", "pwsh.exe"];
 
     /// Validate the configuration and return a list of warning/error messages.
     #[must_use]

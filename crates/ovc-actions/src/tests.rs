@@ -314,7 +314,11 @@ actions:
                 display_name: None,
                 language: None,
                 tool: None,
-                command: Some("sleep 60".to_owned()),
+                command: Some(if cfg!(target_os = "windows") {
+                    "ping -n 61 127.0.0.1 >nul".to_owned()
+                } else {
+                    "sleep 60".to_owned()
+                }),
                 fix_command: None,
                 trigger: Trigger::Manual,
                 timeout: Some(1),
