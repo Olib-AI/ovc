@@ -172,6 +172,7 @@ install_binary() {
     info "Installing binary to ${BINARY_PATH}..."
     $SUDO_CMD mkdir -p "$INSTALL_DIR"
     $SUDO_CMD install -m 755 "$DOWNLOAD_PATH" "$BINARY_PATH"
+    $SUDO_CMD chmod +x "$BINARY_PATH"
 
     # macOS: remove quarantine and ad-hoc sign
     if [ "$OS" = "darwin" ]; then
