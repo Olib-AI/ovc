@@ -121,6 +121,10 @@ jobs:
             os: macos-latest
             artifact: ovc-darwin-arm64
             use_cross: false
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            artifact: ovc-windows-amd64.exe
+            use_cross: false
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -210,6 +214,7 @@ jobs:
         shell: bash
         run: |
           src="target/${{ matrix.target }}/release/ovc"
+          if [[ "${{ matrix.artifact }}" == *.exe ]]; then src="${src}.exe"; fi
           cp "$src" "${{ matrix.artifact }}"
 
       - name: Upload artifact

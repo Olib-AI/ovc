@@ -13,12 +13,26 @@ pub fn execute(args: &WebArgs) -> Result<()> {
 
     // Check if the server is already running by hitting the health endpoint.
     let health_url = format!("{url}/api/v1/health");
-    let server_running = std::process::Command::new("curl")
-        .args(["-s", "-o", "/dev/null", "-w", "%{http_code}", &health_url])
-        .output()
-        .ok()
-        .and_then(|out| String::from_utf8(out.stdout).ok())
-        .is_some_and(|code| code.trim() == "200");
+    let server_running = {
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .ok();
+        rt.and_then(|rt| {
+            rt.block_on(async {
+                reqwest::Client::builder()
+                    .timeout(std::time::Duration::from_secs(2))
+                    .build()
+                    .ok()?
+                    .get(&health_url)
+                    .send()
+                    .await
+                    .ok()
+                    .filter(|r| r.status().is_success())
+            })
+        })
+        .is_some()
+    };
 
     let cyan = Style::new().cyan().bold();
     let dim = Style::new().dim();

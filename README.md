@@ -613,6 +613,7 @@ cargo clippy --workspace  # strict: all + pedantic + nursery
 | Linux | aarch64 | `ovc-linux-arm64` |
 | macOS | Intel | `ovc-darwin-amd64` |
 | macOS | Apple Silicon | `ovc-darwin-arm64` |
+| Windows | x86_64 | `ovc-windows-amd64.exe` |
 
 ### Self-hosted cloud storage patterns
 
