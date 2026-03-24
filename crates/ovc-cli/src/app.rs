@@ -18,7 +18,7 @@ use clap::{Args, Parser, Subcommand};
         ovc key generate --name mykey        Generate encryption key pair\n  \
         ovc add src/ && ovc commit -m \"msg\"  Stage and commit\n  \
         ovc serve --port 9742                Start web UI\n\n\
-        Documentation: https://www.olib.ai/ovc",
+        Documentation: https://github.com/Olib-AI/ovc",
     after_help = "Environment variables:\n  \
         OVC_PASSWORD       Repository password\n  \
         OVC_KEY            Key name for key-based auth\n  \
