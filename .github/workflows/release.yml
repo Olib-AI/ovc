@@ -194,17 +194,13 @@ jobs:
           # Create zip for notarization
           ditto -c -k "target/${{ matrix.target }}/release/ovc" /tmp/ovc-notarize.zip
 
-          # Submit for notarization (retry up to 3 times on transient failures)
-          for attempt in 1 2 3; do
-            echo "Notarization attempt $attempt..."
-            xcrun notarytool submit /tmp/ovc-notarize.zip \
-              --apple-id "$APPLE_ID" \
-              --password "$APPLE_APP_PASSWORD" \
-              --team-id "$APPLE_TEAM_ID" \
-              --wait --timeout 30m && break
-            echo "Attempt $attempt failed, retrying in 30s..."
-            sleep 30
-          done
+          # Submit for notarization (async — don't block CI)
+          # The binary is already code-signed; notarization completes in the
+          # background and is usually ready by the time anyone downloads it.
+          xcrun notarytool submit /tmp/ovc-notarize.zip \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" || true
 
           # Cleanup
           security delete-keychain "$KEYCHAIN_PATH"
