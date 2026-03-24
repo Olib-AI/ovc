@@ -1,0 +1,33 @@
+# Build artifacts
+target/
+dist/
+frontend/dist/
+frontend/node_modules/
+node_modules/
+
+# OVC internal
+.ovc
+.ovc-link
+*.ovc
+*.ovc.lock
+*.ovc.tmp
+*.ovc.wal
+*.ovc.bak
+.ovc/actions-history/
+
+# OS files
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Git (if present)
+.git/

@@ -1,0 +1,32 @@
+[package]
+name = "ovc-actions"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Actions engine for OVC — lint, format, build, test, audit, and custom scripts"
+
+[lints]
+workspace = true
+
+[dependencies]
+ovc-core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+chrono = { workspace = true }
+regex = { workspace = true }
+globset = { workspace = true }
+walkdir = { workspace = true }
+uuid = { workspace = true }
+base64 = { workspace = true }
+argon2 = { workspace = true }
+chacha20poly1305 = { workspace = true }
+rand = { workspace = true }
+sha2 = { workspace = true }
+futures = { workspace = true }
+reqwest = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"

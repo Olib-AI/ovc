@@ -1,0 +1,330 @@
+defaults:
+  shell: /bin/bash
+  timeout: 300
+  env:
+    RUST_BACKTRACE: "1"
+
+actions:
+  # ── Security ──────────────────────────────────────────────
+  secret-scan:
+    category: audit
+    display_name: "Secret Scanner"
+    builtin: secret_scan
+    trigger: pre-commit
+
+  merge-conflict-check:
+    category: quality
+    display_name: "Merge Conflict Check"
+    builtin: merge_conflict_check
+    trigger: pre-commit
+
+  # ── Rust Format (auto-fix) ─────────────────────────────────
+  rust-fmt:
+    category: format
+    display_name: "Rustfmt"
+    language: Rust
+    tool: rustfmt
+    command: "cargo fmt --check"
+    fix_command: "cargo fmt"
+    auto_fix: true
+    trigger: pre-commit
+    condition:
+      paths:
+        - "**/*.rs"
+
+  # ── Rust Lint & Build ──────────────────────────────────────
+  rust-check:
+    category: build
+    display_name: "Cargo Check"
+    language: Rust
+    tool: cargo
+    command: "cargo check --workspace"
+    trigger: pre-commit
+    depends_on:
+      - rust-fmt
+    condition:
+      paths:
+        - "**/*.rs"
+        - "Cargo.toml"
+        - "Cargo.lock"
+    timeout: 120
+
+  rust-clippy:
+    category: lint
+    display_name: "Clippy (strict)"
+    language: Rust
+    tool: clippy
+    command: "cargo clippy --workspace -- -D warnings"
+    trigger: pre-commit
+    depends_on:
+      - rust-check
+    condition:
+      paths:
+        - "**/*.rs"
+        - "Cargo.toml"
+        - "Cargo.lock"
+    timeout: 180
+
+  # ── Rust Test (pre-push) ───────────────────────────────────
+  rust-test:
+    category: test
+    display_name: "Cargo Test"
+    language: Rust
+    tool: cargo
+    command: "cargo test --workspace"
+    trigger: pre-push
+    condition:
+      paths:
+        - "**/*.rs"
+        - "Cargo.toml"
+    timeout: 300
+
+  # ── Frontend Format (auto-fix) ─────────────────────────────
+  frontend-lint:
+    category: lint
+    display_name: "ESLint"
+    language: TypeScript
+    tool: eslint
+    command: "npx eslint src"
+    fix_command: "npx eslint src --fix"
+    auto_fix: true
+    trigger: pre-commit
+    working_dir: frontend
+    condition:
+      paths:
+        - "frontend/**/*.ts"
+        - "frontend/**/*.tsx"
+        - "frontend/**/*.js"
+
+  # ── Frontend Build & Types ─────────────────────────────────
+  frontend-typecheck:
+    category: build
+    display_name: "TypeScript Check"
+    language: TypeScript
+    tool: tsc
+    command: "npx tsc --noEmit"
+    trigger: pre-commit
+    depends_on:
+      - frontend-lint
+    working_dir: frontend
+    condition:
+      paths:
+        - "frontend/**/*.ts"
+        - "frontend/**/*.tsx"
+
+  frontend-build:
+    category: build
+    display_name: "Vite Build"
+    language: TypeScript
+    tool: vite
+    command: "npm run build"
+    trigger: pre-push
+    depends_on:
+      - frontend-typecheck
+    working_dir: frontend
+    timeout: 120
+
+  # ── Quality ──────────────────────────────────────────────
+  trailing-whitespace:
+    category: lint
+    display_name: "Trailing Whitespace"
+    builtin: trailing_whitespace
+    trigger: pre-commit
+
+  encoding-check:
+    category: quality
+    display_name: "UTF-8 Encoding"
+    builtin: encoding_check
+    trigger: pre-commit
+
+  eof-newline:
+    category: quality
+    display_name: "EOF Newline"
+    builtin: eof_newline
+    trigger: pre-commit
+    continue_on_error: true
+
+  debug-statements:
+    category: quality
+    display_name: "Debug Statements"
+    builtin: debug_statements
+    trigger: pre-commit
+    config:
+      ignore_paths:
+        - "crates/ovc-cli/"
+        - "ErrorBoundary"
+
+  yaml-lint:
+    category: lint
+    display_name: "YAML Lint"
+    builtin: yaml_lint
+    trigger: pre-commit
+
+  json-lint:
+    category: lint
+    display_name: "JSON Lint"
+    builtin: json_lint
+    trigger: pre-commit
+
+  commit-message-lint:
+    category: quality
+    display_name: "Commit Message Lint"
+    builtin: commit_message_lint
+    trigger: pre-commit
+
+  mixed-indentation:
+    category: lint
+    display_name: "Mixed Indentation"
+    builtin: mixed_indentation
+    trigger: pre-commit
+
+  hardcoded-ip:
+    category: security
+    display_name: "Hardcoded IP Check"
+    builtin: hardcoded_ip
+    trigger: pre-commit
+    continue_on_error: true
+
+  shell-check:
+    category: lint
+    display_name: "Shell Script Check"
+    builtin: shell_check
+    trigger: pre-commit
+
+  # ── Pull Request Checks ────────────────────────────────
+  pr-rust-check:
+    category: build
+    display_name: "PR: Cargo Check"
+    language: Rust
+    tool: cargo
+    command: "cargo check --workspace"
+    trigger: pull-request
+    condition:
+      paths:
+        - "**/*.rs"
+        - "Cargo.toml"
+        - "Cargo.lock"
+    timeout: 120
+
+  pr-rust-clippy:
+    category: lint
+    display_name: "PR: Clippy"
+    language: Rust
+    tool: clippy
+    command: "cargo clippy --workspace -- -D warnings"
+    trigger: pull-request
+    depends_on:
+      - pr-rust-check
+    condition:
+      paths:
+        - "**/*.rs"
+        - "Cargo.toml"
+        - "Cargo.lock"
+    timeout: 180
+
+  pr-rust-test:
+    category: test
+    display_name: "PR: Cargo Test"
+    language: Rust
+    tool: cargo
+    command: "cargo test --workspace"
+    trigger: pull-request
+    depends_on:
+      - pr-rust-check
+    condition:
+      paths:
+        - "**/*.rs"
+        - "Cargo.toml"
+        - "Cargo.lock"
+    timeout: 300
+
+  pr-secret-scan:
+    category: audit
+    display_name: "PR: Secret Scanner"
+    builtin: secret_scan
+    trigger: pull-request
+
+  pr-merge-conflict:
+    category: quality
+    display_name: "PR: Merge Conflict Check"
+    builtin: merge_conflict_check
+    trigger: pull-request
+
+  # ── Pre-Merge Checks ────────────────────────────────────
+  merge-secret-scan:
+    category: audit
+    display_name: "Merge: Secret Scanner"
+    builtin: secret_scan
+    trigger: pre-merge
+
+  merge-conflict-check:
+    category: quality
+    display_name: "Merge: Conflict Check"
+    builtin: merge_conflict_check
+    trigger: pre-merge
+
+  merge-rust-check:
+    category: build
+    display_name: "Merge: Cargo Check"
+    language: Rust
+    tool: cargo
+    command: "cargo check --workspace"
+    trigger: pre-merge
+    condition:
+      paths:
+        - "**/*.rs"
+        - "Cargo.toml"
+        - "Cargo.lock"
+    timeout: 120
+
+  merge-rust-test:
+    category: test
+    display_name: "Merge: Cargo Test"
+    language: Rust
+    tool: cargo
+    command: "cargo test --workspace"
+    trigger: pre-merge
+    depends_on:
+      - merge-rust-check
+    condition:
+      paths:
+        - "**/*.rs"
+        - "Cargo.toml"
+    timeout: 300
+
+  # ── On-Fail Notification ──────────────────────────────
+  notify-on-failure:
+    category: custom
+    display_name: "Failure Notification"
+    command: 'echo "⚠ Actions failed: $OVC_FAILED_ACTIONS (trigger: $OVC_TRIGGER)" >&2'
+    trigger: on-fail
+    continue_on_error: true
+
+  # ── Audit (manual) ──────────────────────────────────────
+  dependency-update-check:
+    category: audit
+    display_name: "Dependency Update Check"
+    builtin: dependency_update_check
+    trigger: manual
+
+# ── Branch Protection Rules ──────────────────────────────
+branch_protection:
+  - pattern: "main"
+    required_checks:
+      - merge-secret-scan
+      - merge-conflict-check
+      - merge-rust-check
+      - merge-rust-test
+    require_signed_commits: true
+    require_pull_request: true
+    block_force_push: true
+    block_deletion: true
+
+  - pattern: "release/*"
+    required_checks:
+      - merge-secret-scan
+      - merge-rust-check
+      - merge-rust-test
+    require_signed_commits: true
+    block_force_push: true
+    block_deletion: true

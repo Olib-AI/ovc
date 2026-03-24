@@ -1,0 +1,1518 @@
+//! Documentation API endpoints — searchable CLI and UI reference.
+
+use axum::Json;
+use axum::extract::{Path, Query};
+use serde::{Deserialize, Serialize};
+
+use crate::error::ApiError;
+
+// ── Types ────────────────────────────────────────────────────────────────
+
+/// A single documentation section.
+#[derive(Debug, Clone, Serialize)]
+pub struct DocSection {
+    /// Unique identifier (e.g., `"repo-management"`).
+    pub id: String,
+    /// Category: `"cli"` or `"ui"`.
+    pub category: String,
+    /// Section title.
+    pub title: String,
+    /// Markdown content.
+    pub content: String,
+    /// Searchable tags.
+    pub tags: Vec<String>,
+}
+
+/// A category in the documentation index.
+#[derive(Debug, Clone, Serialize)]
+pub struct DocCategory {
+    /// Category identifier.
+    pub id: String,
+    /// Display title.
+    pub title: String,
+    /// Sections within this category.
+    pub sections: Vec<DocSectionSummary>,
+}
+
+/// Summary of a section (without full content) for the index.
+#[derive(Debug, Clone, Serialize)]
+pub struct DocSectionSummary {
+    /// Section identifier.
+    pub id: String,
+    /// Section title.
+    pub title: String,
+    /// Searchable tags.
+    pub tags: Vec<String>,
+}
+
+/// Full documentation index response.
+#[derive(Debug, Clone, Serialize)]
+pub struct DocsIndexResponse {
+    /// All categories with their section summaries.
+    pub categories: Vec<DocCategory>,
+}
+
+/// A search result with relevance scoring.
+#[derive(Debug, Clone, Serialize)]
+pub struct DocSearchResult {
+    /// Section identifier.
+    pub id: String,
+    /// Category.
+    pub category: String,
+    /// Section title.
+    pub title: String,
+    /// Content snippet with matching context.
+    pub snippet: String,
+    /// Relevance score (higher is more relevant).
+    pub score: u32,
+    /// Tags that matched the query.
+    pub matched_tags: Vec<String>,
+}
+
+/// Search response.
+#[derive(Debug, Clone, Serialize)]
+pub struct DocsSearchResponse {
+    /// Search query.
+    pub query: String,
+    /// Matching results sorted by relevance.
+    pub results: Vec<DocSearchResult>,
+    /// Total number of results.
+    pub total: usize,
+}
+
+/// Query parameters for search.
+#[derive(Debug, Deserialize)]
+pub struct SearchQuery {
+    /// Search query string.
+    pub q: String,
+}
+
+// ── Static Documentation Content ─────────────────────────────────────────
+
+/// Builds CLI reference documentation sections.
+#[allow(clippy::too_many_lines)]
+fn cli_docs() -> Vec<DocSection> {
+    vec![
+        DocSection {
+            id: "getting-started-cli".into(),
+            category: "cli".into(),
+            title: "Getting Started".into(),
+            content: concat!(
+                "# Getting Started with OVC\n\n",
+                "OVC provides a guided setup wizard to configure your identity, encryption keys, ",
+                "repository storage, and environment in one step.\n\n",
+                "## `ovc onboard`\n\n",
+                "Interactive setup wizard for new OVC users. Walks you through:\n\n",
+                "1. **Identity** — Set your name and email (used for commits)\n",
+                "2. **Key pair** — Generate an Ed25519+X25519 key for encryption and commit signing\n",
+                "3. **Repository storage** — Choose where to store `.ovc` files (local, iCloud, custom)\n",
+                "4. **Projects directory** — Set the directory OVC scans for linked repositories\n",
+                "5. **Web UI** — Configure password and port for the web interface\n",
+                "6. **Daemon** — Optionally install the OVC background service\n\n",
+                "```bash\novc onboard\n```\n\n",
+                "The wizard writes shell environment variables to your `~/.zshrc` or `~/.bashrc` automatically.\n\n",
+                "### Non-interactive mode (CI/scripting)\n\n",
+                "Skip all prompts and configure from flags and environment variables:\n\n",
+                "```bash\n",
+                "OVC_KEY_PASSPHRASE=mysecret ovc onboard \\\n",
+                "  --non-interactive \\\n",
+                "  --name mykey \\\n",
+                "  --identity \"Alice <alice@example.com>\"\n",
+                "```\n\n",
+                "**Options:**\n",
+                "- `--non-interactive` — Skip all prompts, use flags and env vars\n",
+                "- `--name <KEY_NAME>` — Key name (required in non-interactive mode)\n",
+                "- `--identity <IDENTITY>` — Author identity as `\"Name <email>\"` (required in non-interactive mode)\n\n",
+                "### Environment variables configured\n\n",
+                "After onboarding, these variables are added to your shell config:\n\n",
+                "| Variable | Purpose |\n",
+                "|---|---|\n",
+                "| `OVC_KEY` | Default key name (stored in `~/.ssh/ovc/`) |\n",
+                "| `OVC_KEY_PASSPHRASE` | Key passphrase |\n",
+                "| `OVC_AUTHOR_NAME` | Commit author name |\n",
+                "| `OVC_AUTHOR_EMAIL` | Commit author email |\n",
+                "| `OVC_SIGN_COMMITS` | Auto-sign all commits (`true`) |\n",
+                "| `OVC_REPOS_DIR` | Repository storage directory |\n",
+                "| `OVC_PORT` | Web UI server port |\n\n",
+                "### Manual setup\n\n",
+                "If you prefer to set up manually instead of using the wizard:\n\n",
+                "```bash\n",
+                "# 1. Generate a key pair\n",
+                "ovc key generate --name mykey --identity \"Your Name <you@email.com>\"\n\n",
+                "# 2. Add to your shell config (~/.zshrc or ~/.bashrc)\n",
+                "export OVC_KEY=mykey\n",
+                "export OVC_KEY_PASSPHRASE=<your-passphrase>\n",
+                "export OVC_AUTHOR_NAME=\"Your Name\"\n",
+                "export OVC_AUTHOR_EMAIL=\"you@email.com\"\n",
+                "export OVC_SIGN_COMMITS=true\n\n",
+                "# 3. Create your first repository\n",
+                "ovc init --name my-project.ovc --key mykey\n\n",
+                "# 4. Start working\n",
+                "ovc add .\n",
+                "ovc commit -m \"initial commit\"\n",
+                "```\n\n",
+                "### Key backup\n\n",
+                "After generating your key, back it up to your password manager:\n\n",
+                "```bash\novc key export mykey\n```\n\n",
+                "Copy the output into a Bitwarden, 1Password, or similar secure note.\n\n",
+                "### Key-based authentication\n\n",
+                "OVC supports challenge-response authentication using Ed25519 key pairs as an ",
+                "alternative to password-based authentication.\n\n",
+                "**How it works:**\n\n",
+                "1. The server sends a random challenge to the client\n",
+                "2. The client signs the challenge with its private key\n",
+                "3. The server verifies the signature against the repository's authorized keys\n",
+                "4. On success, a JWT session token is issued\n\n",
+                "**When to use key auth:**\n",
+                "- Multi-user repositories where each user has their own key pair\n",
+                "- CI/CD pipelines where passwords are impractical\n",
+                "- Commit signing workflows that require identity verification\n\n",
+                "**When to use password auth:**\n",
+                "- Single-user repositories\n",
+                "- Quick setup without key generation\n",
+                "- Shared access where individual identity tracking is not needed\n",
+            ).into(),
+            tags: vec![
+                "getting started".into(), "setup".into(), "onboard".into(),
+                "install".into(), "configure".into(), "key".into(), "identity".into(),
+                "environment".into(), "env".into(), "wizard".into(), "init".into(),
+                "non-interactive".into(), "CI".into(), "passphrase".into(),
+                "authentication".into(), "challenge-response".into(),
+            ],
+        },
+        DocSection {
+            id: "repo-management".into(),
+            category: "cli".into(),
+            title: "Repository Management".into(),
+            content: concat!(
+                "# Repository Management\n\n",
+                "## `ovc init`\n\n",
+                "Create a new encrypted OVC repository.\n\n",
+                "```bash\novc init [PATH] [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `--name <NAME>` — Name of the `.ovc` file (default: `repo.ovc`)\n",
+                "- `--default-branch <BRANCH>` — Name of the default branch (default: `main`)\n",
+                "- `--key <KEY>` — Initialize using an SSH key pair instead of a password\n",
+                "- `--store <PATH>` — Store the `.ovc` file at a remote path (e.g., iCloud), creating a `.ovc-link` pointer locally\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc init                                    # Create repo.ovc in current dir\n",
+                "ovc init --name myproject.ovc               # Custom filename\n",
+                "ovc init --key alice                        # Use key pair\n",
+                "ovc init --store ~/iCloud/ovc/myproject.ovc # Store in iCloud\n",
+                "```\n\n",
+                "## `ovc add`\n\n",
+                "Stage files for the next commit.\n\n",
+                "```bash\novc add <PATHS...> [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `-a, --all` — Stage all modified and untracked files\n",
+                "- `-f, --force` — Stage even ignored files\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc add src/main.rs\n",
+                "ovc add -a                  # Stage everything\n",
+                "ovc add -f build/output.bin # Force-stage ignored file\n",
+                "```\n\n",
+                "## `ovc commit`\n\n",
+                "Record staged changes as a new commit.\n\n",
+                "```bash\novc commit [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `-m, --message <MSG>` — Commit message\n",
+                "- `-a, --all` — Auto-stage all modified tracked files before committing\n",
+                "- `--author <IDENTITY>` — Author identity (`\"Name <email>\"`)\n",
+                "- `-S, --sign` — Sign the commit with your Ed25519 key\n",
+                "- `--no-verify` — Skip pre-commit hooks\n",
+                "- `--amend` — Amend the previous commit\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc commit -m \"initial commit\"\n",
+                "ovc commit -a -m \"fix typo\"\n",
+                "ovc commit --author \"Alice <a@b.com>\" -m \"authored commit\"\n",
+                "ovc commit -S -m \"signed commit\"\n",
+                "```\n\n",
+                "## `ovc status`\n\n",
+                "Show the working tree status (staged, unstaged, untracked files).\n\n",
+                "```bash\novc status [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `-s, --short` — Show output in short format\n\n",
+                "## `ovc log`\n\n",
+                "Show commit history.\n\n",
+                "```bash\novc log [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `-n, --max-count <N>` — Maximum number of commits to show\n",
+                "- `--oneline` — Show each commit on a single line\n",
+                "- `--all` — Show commits from all branches\n",
+                "- `--show-signatures` — Show signature verification details\n",
+                "- `--graph` — Show branch topology graph\n\n",
+                "## `ovc diff`\n\n",
+                "Show changes between versions.\n\n",
+                "```bash\novc diff [OPTIONS] [PATHS...]\n```\n\n",
+                "**Options:**\n",
+                "- `--staged` (alias: `--cached`) — Show staged changes (index vs HEAD)\n",
+                "- `--stat` — Show only a summary of changes\n",
+                "- `--name-only` — Show only names of changed files\n\n",
+                "Paths can include a `branch-a..branch-b` range for branch comparison.\n\n",
+                "## `ovc show`\n\n",
+                "Show commit details and diff.\n\n",
+                "```bash\novc show [COMMIT]\n```\n\n",
+                "Defaults to `HEAD` if no commit is specified.",
+            ).into(),
+            tags: vec!["init".into(), "add".into(), "commit".into(), "status".into(),
+                       "log".into(), "diff".into(), "show".into(), "repository".into(),
+                       "stage".into(), "sign".into(), "amend".into()],
+        },
+        DocSection {
+            id: "branching".into(),
+            category: "cli".into(),
+            title: "Branching & Merging".into(),
+            content: concat!(
+                "# Branching & Merging\n\n",
+                "## `ovc branch`\n\n",
+                "Manage branches.\n\n",
+                "```bash\novc branch [NAME] [START_POINT] [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `-l, --list` — List branches\n",
+                "- `-a, --all` — Show all branches (local and remote)\n",
+                "- `-d, --delete <NAME>` — Delete a branch\n",
+                "- `-D, --force-delete <NAME>` — Force delete a branch even if not fully merged\n",
+                "- `-m, --move <OLD> <NEW>` — Rename a branch\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc branch feature/login          # Create branch at HEAD\n",
+                "ovc branch feature/fix abc123     # Create branch at specific commit\n",
+                "ovc branch -l                     # List branches\n",
+                "ovc branch -d feature/old         # Delete branch\n",
+                "ovc branch -m old-name new-name   # Rename branch\n",
+                "```\n\n",
+                "## `ovc checkout`\n\n",
+                "Switch branches or restore working tree files.\n\n",
+                "```bash\novc checkout [TARGET] [OPTIONS] [-- PATHS...]\n```\n\n",
+                "**Options:**\n",
+                "- `-b <NAME>` — Create a new branch and switch to it\n",
+                "- `-f, --force` — Force checkout, discarding local modifications\n",
+                "- `-- <PATHS>` — Paths to restore from HEAD\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc checkout main                   # Switch to main\n",
+                "ovc checkout -b feature/new         # Create and switch\n",
+                "ovc checkout -f main                # Force checkout\n",
+                "ovc checkout -- src/file.rs         # Restore file from HEAD\n",
+                "```\n\n",
+                "## `ovc merge`\n\n",
+                "Merge a branch into the current branch.\n\n",
+                "```bash\novc merge <BRANCH> [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `--no-verify` — Skip pre-merge and post-merge hooks\n\n",
+                "## `ovc rebase`\n\n",
+                "Rebase current branch onto another branch.\n\n",
+                "```bash\novc rebase <ONTO>\n```\n\n",
+                "Replays commits from the current branch on top of the target branch.\n\n",
+                "## `ovc cherry-pick`\n\n",
+                "Apply a commit's changes onto HEAD.\n\n",
+                "```bash\novc cherry-pick <COMMIT>\n```\n\n",
+                "## `ovc revert`\n\n",
+                "Revert a commit by creating a new commit that undoes its changes.\n\n",
+                "```bash\novc revert <COMMIT>\n```\n\n",
+                "Accepts a commit id (hex), branch name, `HEAD~N`, etc.",
+            ).into(),
+            tags: vec!["branch".into(), "checkout".into(), "merge".into(), "rebase".into(),
+                       "cherry-pick".into(), "revert".into(), "switch".into()],
+        },
+        DocSection {
+            id: "stash-reset-clean".into(),
+            category: "cli".into(),
+            title: "Stash, Reset & Clean".into(),
+            content: concat!(
+                "# Stash, Reset & Clean\n\n",
+                "## `ovc stash`\n\n",
+                "Stash current index state for later retrieval.\n\n",
+                "### Sub-commands:\n\n",
+                "- **`ovc stash push`** — Save the current index state\n",
+                "  - `-m, --message <MSG>` — Stash description (default: `\"WIP\"`)\n",
+                "- **`ovc stash pop [INDEX]`** — Restore and remove a stash entry (default: 0)\n",
+                "- **`ovc stash apply [INDEX]`** — Restore a stash entry without removing it\n",
+                "- **`ovc stash drop [INDEX]`** — Remove a stash entry without restoring\n",
+                "- **`ovc stash list`** — List all stash entries\n",
+                "- **`ovc stash clear`** — Remove all stash entries\n\n",
+                "Running `ovc stash` with no sub-command is equivalent to `ovc stash push`.\n\n",
+                "## `ovc reset`\n\n",
+                "Reset HEAD to a specified commit.\n\n",
+                "```bash\novc reset [COMMIT] [OPTIONS] [-- PATHS...]\n```\n\n",
+                "**Modes:**\n",
+                "- `--soft` — Move HEAD only (keep index and working directory)\n",
+                "- `--mixed` — Move HEAD and reset index (default)\n",
+                "- `--hard` — Move HEAD, reset index, and working directory\n\n",
+                "Default target: `HEAD~1` (parent of current commit).\n\n",
+                "With `-- PATHS`, unstages the specified paths (resets to HEAD version in index).\n\n",
+                "## `ovc clean`\n\n",
+                "Remove untracked files from the working directory.\n\n",
+                "```bash\novc clean [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `-n, --dry-run` — Show what would be removed without deleting\n",
+                "- `-f, --force` — Actually remove untracked files (required)",
+            ).into(),
+            tags: vec!["stash".into(), "reset".into(), "clean".into(), "unstage".into(),
+                       "undo".into(), "discard".into()],
+        },
+        DocSection {
+            id: "key-management".into(),
+            category: "cli".into(),
+            title: "Key Management".into(),
+            content: concat!(
+                "# Key Management\n\n",
+                "## `ovc key`\n\n",
+                "Manage SSH key pairs for OVC repository encryption.\n\n",
+                "### Sub-commands:\n\n",
+                "- **`ovc key generate`** — Generate a new Ed25519 key pair\n",
+                "  - `--name <NAME>` — Key name (default: `\"default\"`)\n",
+                "  - `--identity <IDENTITY>` — Identity for signing (e.g., `\"Alice <alice@example.com>\"`)\n",
+                "- **`ovc key list`** — List all key pairs in `~/.ssh/ovc/`\n",
+                "- **`ovc key export <NAME>`** — Export a key pair as JSON for backup\n",
+                "- **`ovc key import [PATH]`** — Import a key pair from a file (or `-` for stdin)\n",
+                "  - `--name <NAME>` — Custom name for the imported key\n",
+                "- **`ovc key add <PUBLIC_KEY_PATH>`** — Add a public key to the current repository (grant access)\n",
+                "- **`ovc key remove <FINGERPRINT>`** — Remove a key from the current repository (revoke access)\n",
+                "- **`ovc key authorized`** — List authorized keys for the current repository\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc key generate --name mykey\n",
+                "ovc key list\n",
+                "ovc key export mykey > backup.json\n",
+                "ovc key import backup.json\n",
+                "ovc key add ~/.ssh/ovc/alice.pub\n",
+                "ovc key remove SHA256:abc123...\n",
+                "```\n\n",
+                "## `ovc verify`\n\n",
+                "Verify the Ed25519 signature on a commit.\n\n",
+                "```bash\novc verify [COMMIT]\n```\n\n",
+                "Defaults to `HEAD`. Shows signature status and signer identity.",
+            ).into(),
+            tags: vec!["key".into(), "ssh".into(), "encryption".into(), "sign".into(),
+                       "verify".into(), "ed25519".into(), "fingerprint".into(),
+                       "authorize".into(), "access".into()],
+        },
+        DocSection {
+            id: "remote-sync".into(),
+            category: "cli".into(),
+            title: "Remote & Sync".into(),
+            content: concat!(
+                "# Remote & Sync\n\n",
+                "## `ovc remote`\n\n",
+                "Manage remote repositories.\n\n",
+                "### Sub-commands:\n\n",
+                "- **`ovc remote add <NAME> <URL>`** — Add a remote\n",
+                "  - `--backend <TYPE>` — Backend type: `\"local\"` or `\"gcs\"` (default: `\"local\"`)\n",
+                "- **`ovc remote remove <NAME>`** — Remove a remote\n",
+                "- **`ovc remote list`** — List all remotes\n\n",
+                "## `ovc push`\n\n",
+                "Push the local repository to a configured remote.\n\n",
+                "```bash\novc push [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `--remote <NAME>` — Remote name (default: `\"origin\"`)\n",
+                "- `-f, --force` — Force push (overwrites remote)\n",
+                "- `--no-verify` — Skip pre-push hooks\n\n",
+                "## `ovc pull`\n\n",
+                "Pull the latest version from a configured remote.\n\n",
+                "```bash\novc pull [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `--remote <NAME>` — Remote name (default: `\"origin\"`)\n\n",
+                "## `ovc sync`\n\n",
+                "Merge remote changes from the shared `.ovc` file. Designed for multi-user\n",
+                "workflows where users share a single `.ovc` file via iCloud, Google Drive, etc.\n\n",
+                "```bash\novc sync\n```\n\n",
+                "Imports remote branches, tags, objects, and notes into the local repository\n",
+                "and saves the merged result.\n\n",
+                "## `ovc sync-status`\n\n",
+                "Show sync status with the remote.\n\n",
+                "```bash\novc sync-status [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `--remote <NAME>` — Remote name (default: `\"origin\"`)",
+            ).into(),
+            tags: vec!["remote".into(), "push".into(), "pull".into(), "sync".into(),
+                       "cloud".into(), "icloud".into(), "gcs".into(), "origin".into()],
+        },
+        DocSection {
+            id: "actions-engine".into(),
+            category: "cli".into(),
+            title: "Actions Engine".into(),
+            content: concat!(
+                "# Actions Engine\n\n",
+                "## `ovc actions`\n\n",
+                "Manage and run actions (lint, format, build, test, audit).\n\n",
+                "Actions are configured per-repository in `.ovc/actions.yml` and can run\n",
+                "automatically on hooks or manually.\n\n",
+                "### Sub-commands:\n\n",
+                "- **`ovc actions init`** — Auto-detect languages and generate actions config\n",
+                "  - `--force` — Overwrite existing configuration\n",
+                "- **`ovc actions list`** — List all configured actions\n",
+                "  - `--trigger <TRIGGER>` — Filter by trigger (`pre-commit`, `post-commit`, `pre-push`, `manual`, `schedule`)\n",
+                "  - `--category <CATEGORY>` — Filter by category (`lint`, `format`, `build`, `test`, `audit`, `builtin`, `custom`)\n",
+                "- **`ovc actions run [NAMES...]`** — Run one or more actions\n",
+                "  - `--trigger <TRIGGER>` — Run all actions for the given trigger\n",
+                "  - `--fix` — Use fix commands where available\n",
+                "  - `--no-verify` — Skip hook verification\n",
+                "- **`ovc actions history`** — Show action run history\n",
+                "  - `-n, --limit <N>` — Maximum number of runs to show (default: 10)\n",
+                "  - `--run-id <ID>` — Show details for a specific run\n",
+                "- **`ovc actions detect`** — Detect languages and toolchains in the repository\n",
+                "- **`ovc actions secrets`** — Manage action secrets\n",
+                "  - `ovc actions secrets list` — List secret names\n",
+                "  - `ovc actions secrets set <NAME> <VALUE>` — Set a secret\n",
+                "  - `ovc actions secrets remove <NAME>` — Remove a secret\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc actions init                       # Auto-detect and create config\n",
+                "ovc actions list                       # List all actions\n",
+                "ovc actions run rust-check             # Run a specific action\n",
+                "ovc actions run --trigger pre-commit   # Run all pre-commit actions\n",
+                "ovc actions run rust-fmt --fix         # Run with auto-fix\n",
+                "ovc actions history                    # Show recent runs\n",
+                "ovc actions secrets set API_KEY abc123 # Set a secret\n",
+                "```",
+            ).into(),
+            tags: vec!["actions".into(), "lint".into(), "format".into(), "build".into(),
+                       "test".into(), "audit".into(), "hook".into(), "pre-commit".into(),
+                       "secrets".into(), "detect".into(), "ci".into()],
+        },
+        DocSection {
+            id: "code-investigation".into(),
+            category: "cli".into(),
+            title: "Code Investigation".into(),
+            content: concat!(
+                "# Code Investigation\n\n",
+                "## `ovc blame`\n\n",
+                "Show line-by-line authorship of a file.\n\n",
+                "```bash\novc blame <FILE> [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `-L, --lines <RANGE>` — Line range to blame (e.g., `\"10,20\"` or `\"10,+5\"`)\n\n",
+                "## `ovc grep`\n\n",
+                "Search file contents in the repository.\n\n",
+                "```bash\novc grep <PATTERN> [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `-i, --case-insensitive` — Case-insensitive search\n",
+                "- `--count` — Show only match counts per file\n\n",
+                "## `ovc describe`\n\n",
+                "Find the nearest tag ancestor of a commit.\n\n",
+                "```bash\novc describe [COMMIT]\n```\n\n",
+                "The commit argument is optional and defaults to `HEAD`.\n\n",
+                "## `ovc shortlog`\n\n",
+                "Summarize commits grouped by author.\n\n",
+                "```bash\novc shortlog [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `-s, --summary` — Show only the commit count per author\n",
+                "- `-n, --sort-by-count` — Sort authors by number of commits (descending)\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc shortlog            # Full shortlog grouped by author\n",
+                "ovc shortlog -s -n      # Summary sorted by commit count\n",
+                "```\n\n",
+                "## `ovc reflog`\n\n",
+                "Show the reference log — a history of all HEAD changes.\n\n",
+                "```bash\novc reflog\n```\n\n",
+                "## `ovc ls-files`\n\n",
+                "List tracked files in the repository index.\n\n",
+                "```bash\novc ls-files [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `--staged` — List staged files\n",
+                "- `--modified` — List modified files\n",
+                "- `--deleted` — List deleted files\n",
+                "- `--untracked` — List untracked files\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc ls-files              # List all tracked files\n",
+                "ovc ls-files --modified   # List only modified files\n",
+                "ovc ls-files --untracked  # List only untracked files\n",
+                "```\n\n",
+                "## `ovc notes`\n\n",
+                "Manage commit annotations (notes).\n\n",
+                "### Sub-commands:\n\n",
+                "- **`ovc notes list`** — List all notes\n",
+                "- **`ovc notes show <COMMIT>`** — Show the note for a commit\n",
+                "- **`ovc notes add <COMMIT> -m <MSG>`** — Add a note to a commit\n",
+                "- **`ovc notes remove <COMMIT>`** — Remove a note from a commit\n\n",
+                "## `ovc archive`\n\n",
+                "Export the repository tree as an archive.\n\n",
+                "```bash\novc archive [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `--format <FMT>` — Archive format (`tar` or `zip`)\n",
+                "- `--output <PATH>` — Output file path\n",
+                "- `--ref <REF>` — Branch, tag, or commit to archive (default: `HEAD`)\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc archive --format tar --output snapshot.tar\n",
+                "ovc archive --format zip --ref v1.0.0 --output release.zip\n",
+                "```\n\n",
+                "## `ovc bisect`\n\n",
+                "Binary search for a regression-introducing commit.\n\n",
+                "### Sub-commands:\n\n",
+                "- **`ovc bisect start <GOOD> <BAD>`** — Start a bisect session\n",
+                "- **`ovc bisect good [COMMIT]`** — Mark a commit as good\n",
+                "- **`ovc bisect bad [COMMIT]`** — Mark a commit as bad\n",
+                "- **`ovc bisect reset`** — End the bisect session\n\n",
+                "## `ovc gc`\n\n",
+                "Run garbage collection to reclaim storage from unreachable objects.\n\n",
+                "```bash\novc gc [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `--dry-run` — Show what would be collected without actually removing anything\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc gc              # Run garbage collection\n",
+                "ovc gc --dry-run    # Preview what would be removed\n",
+                "```",
+            ).into(),
+            tags: vec!["blame".into(), "grep".into(), "describe".into(), "shortlog".into(),
+                       "reflog".into(), "ls-files".into(), "notes".into(), "archive".into(),
+                       "bisect".into(), "search".into(), "annotation".into(), "gc".into(),
+                       "garbage collection".into()],
+        },
+        DocSection {
+            id: "git-interop".into(),
+            category: "cli".into(),
+            title: "Git Interop".into(),
+            content: concat!(
+                "# Git Interop\n\n",
+                "## `ovc git-import`\n\n",
+                "Import a Git repository into OVC format. Converts all branches, tags, and\n",
+                "history into a single encrypted `.ovc` file.\n\n",
+                "```bash\novc git-import <GIT_REPO> [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `-o, --output <PATH>` — Output path for the `.ovc` file (default: `<repo-name>.ovc`)\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc git-import ./my-project\n",
+                "ovc git-import ./my-project -o project.ovc\n",
+                "```\n\n",
+                "## `ovc git-export`\n\n",
+                "Export an OVC repository to a standard Git repository. Reconstructs the full\n",
+                "working tree and Git history from the `.ovc` file.\n\n",
+                "```bash\novc git-export <OVC_FILE> [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `-o, --output <PATH>` — Output directory for the Git repository\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc git-export project.ovc\n",
+                "ovc git-export project.ovc -o ./exported\n",
+                "```",
+            ).into(),
+            tags: vec!["git".into(), "import".into(), "export".into(), "convert".into(),
+                       "migrate".into(), "interop".into()],
+        },
+        DocSection {
+            id: "server-web".into(),
+            category: "cli".into(),
+            title: "Web UI & Server".into(),
+            content: concat!(
+                "# Web UI & Server\n\n",
+                "## `ovc serve`\n\n",
+                "Start the OVC API server and embedded web UI.\n\n",
+                "```bash\novc serve [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `--port <PORT>` — Port to listen on (default: `9742`, env: `OVC_PORT`)\n",
+                "- `--bind <ADDR>` — Bind address (default: `127.0.0.1`, env: `OVC_BIND`)\n",
+                "- `--repos-dir <DIR>` — Directory containing `.ovc` repository files (env: `OVC_REPOS_DIR`)\n",
+                "- `--jwt-secret <SECRET>` — JWT secret for API authentication (env: `OVC_JWT_SECRET`)\n",
+                "- `--cors-origin <ORIGIN>` — Allowed CORS origins (repeatable, env: `OVC_CORS_ORIGINS`)\n",
+                "- `--workdir <MAP>` — Map repo to its working directory (`repo_id:/path/to/workdir`)\n",
+                "- `--workdir-scan <DIR>` — Directories to scan for `.ovc-link` files (env: `OVC_WORKDIR_SCAN`)\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc serve                                  # Start on 127.0.0.1:9742\n",
+                "ovc serve --port 8080                      # Custom port\n",
+                "ovc serve --bind 0.0.0.0 --port 9742      # Listen on all interfaces\n",
+                "ovc serve --repos-dir ~/projects           # Serve repos from a directory\n",
+                "```\n\n",
+                "## `ovc web` (aliases: `ovc ui`, `ovc gui`)\n\n",
+                "Open the OVC web UI in the default browser. Detects the running OVC daemon\n",
+                "port and opens it. If no daemon is running, starts a temporary server.\n\n",
+                "```bash\novc web [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `--port <PORT>` — Port to connect to (default: `9742`)\n\n",
+                "## `ovc daemon`\n\n",
+                "Manage the OVC background server daemon (macOS `LaunchAgent`).\n\n",
+                "### Sub-commands:\n\n",
+                "- **`ovc daemon install`** — Install and start the daemon\n",
+                "  - `--port <PORT>` — Server port (default: `9742`)\n",
+                "- **`ovc daemon uninstall`** — Uninstall the daemon\n",
+                "- **`ovc daemon start`** — Start the daemon\n",
+                "- **`ovc daemon stop`** — Stop the daemon\n",
+                "- **`ovc daemon status`** — Show daemon status and health\n",
+                "- **`ovc daemon logs`** — View daemon logs\n",
+                "  - `-f, --follow` — Follow log output",
+            ).into(),
+            tags: vec!["serve".into(), "server".into(), "web".into(), "ui".into(),
+                       "gui".into(), "daemon".into(), "port".into(), "api".into(),
+                       "browser".into(), "launchagent".into()],
+        },
+        DocSection {
+            id: "access-control".into(),
+            category: "cli".into(),
+            title: "Access Control (RBAC)".into(),
+            content: concat!(
+                "# Access Control (RBAC)\n\n",
+                "OVC provides role-based access control for multi-user repositories.\n\n",
+                "## `ovc access`\n\n",
+                "Manage user access and roles for the current repository.\n\n",
+                "### Sub-commands:\n\n",
+                "- **`ovc access list`** — List all users and their roles\n",
+                "- **`ovc access grant <KEY> --role <ROLE>`** — Grant access to a public key\n",
+                "  - Roles: `read`, `write`, `admin`, `owner`\n",
+                "- **`ovc access revoke <FINGERPRINT>`** — Revoke access for a key\n",
+                "- **`ovc access set-role <FINGERPRINT> --role <ROLE>`** — Change a user's role\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc access list\n",
+                "ovc access grant ~/.ssh/ovc/bob.pub --role write\n",
+                "ovc access revoke SHA256:xyz789...\n",
+                "ovc access set-role SHA256:xyz789... --role admin\n",
+                "```\n\n",
+                "## `ovc branch-protect`\n\n",
+                "Configure branch protection rules.\n\n",
+                "```bash\novc branch-protect <BRANCH> [OPTIONS]\n```\n\n",
+                "**Options:**\n",
+                "- `--required-approvals <N>` — Number of required approvals before merge\n",
+                "- `--require-ci` — Require CI checks to pass before merge\n",
+                "- `--remove` — Remove protection from the branch\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc branch-protect main --required-approvals 2 --require-ci\n",
+                "ovc branch-protect main --remove\n",
+                "ovc branch-protect release/* --required-approvals 1\n",
+                "```",
+            ).into(),
+            tags: vec!["access".into(), "rbac".into(), "role".into(), "grant".into(),
+                       "revoke".into(), "permission".into(), "branch protection".into(),
+                       "approvals".into(), "ci".into()],
+        },
+        DocSection {
+            id: "submodules".into(),
+            category: "cli".into(),
+            title: "Submodules".into(),
+            content: concat!(
+                "# Submodules\n\n",
+                "OVC supports embedding references to other OVC repositories as submodules.\n\n",
+                "## `ovc submodule`\n\n",
+                "Manage repository submodules.\n\n",
+                "### Sub-commands:\n\n",
+                "- **`ovc submodule add <NAME> <URL> [<PATH>]`** — Add a submodule\n",
+                "  - `<NAME>` — Logical name for the submodule\n",
+                "  - `<URL>` — URL or path to the submodule repository\n",
+                "  - `<PATH>` — Local path to check out the submodule (default: `./<NAME>`)\n",
+                "- **`ovc submodule status`** — Show the status of all submodules\n",
+                "- **`ovc submodule update`** — Update all submodules to their recorded commits\n",
+                "- **`ovc submodule remove <NAME>`** — Remove a submodule\n\n",
+                "**Examples:**\n",
+                "```bash\n",
+                "ovc submodule add shared-lib https://example.com/shared.ovc libs/shared\n",
+                "ovc submodule status\n",
+                "ovc submodule update\n",
+                "ovc submodule remove shared-lib\n",
+                "```",
+            ).into(),
+            tags: vec!["submodule".into(), "dependency".into(), "nested".into(),
+                       "embed".into(), "repository".into()],
+        },
+        DocSection {
+            id: "onboarding".into(),
+            category: "cli".into(),
+            title: "Onboarding".into(),
+            content: concat!(
+                "# Onboarding\n\n",
+                "## `ovc onboard`\n\n",
+                "Interactive setup wizard that walks new users through the complete OVC ",
+                "configuration process. Configures identity, key pair, repository storage, ",
+                "projects directory, web UI, and daemon in a single guided flow.\n\n",
+                "```bash\novc onboard\n```\n\n",
+                "The wizard automatically writes environment variables to your shell config ",
+                "(`~/.zshrc` or `~/.bashrc`).\n\n",
+                "### Non-interactive mode (CI/scripting)\n\n",
+                "For automated environments, skip all interactive prompts:\n\n",
+                "```bash\n",
+                "OVC_KEY_PASSPHRASE=mysecret ovc onboard \\\n",
+                "  --non-interactive \\\n",
+                "  --name mykey \\\n",
+                "  --identity \"CI Bot <ci@example.com>\"\n",
+                "```\n\n",
+                "**Options:**\n",
+                "- `--non-interactive` — Skip all prompts, use flags and env vars\n",
+                "- `--name <KEY_NAME>` — Key name (required in non-interactive mode)\n",
+                "- `--identity <IDENTITY>` — Author identity as `\"Name <email>\"` (required in non-interactive mode)\n\n",
+                "In non-interactive mode, `OVC_KEY_PASSPHRASE` must be set as an environment ",
+                "variable to encrypt the generated key pair.",
+            ).into(),
+            tags: vec!["onboard".into(), "setup".into(), "wizard".into(),
+                       "non-interactive".into(), "CI".into(), "configure".into()],
+        },
+        DocSection {
+            id: "environment-variables".into(),
+            category: "cli".into(),
+            title: "Environment Variables".into(),
+            content: concat!(
+                "# Environment Variables\n\n",
+                "OVC reads the following environment variables:\n\n",
+                "| Variable | Description |\n",
+                "|---|---|\n",
+                "| `OVC_PASSWORD` | Repository password (avoids interactive prompt) |\n",
+                "| `OVC_KEY` | Key name for key-based authentication |\n",
+                "| `OVC_KEY_PASSPHRASE` | Key passphrase (avoids interactive prompt) |\n",
+                "| `OVC_AUTHOR_NAME` | Default commit author name |\n",
+                "| `OVC_AUTHOR_EMAIL` | Default commit author email |\n",
+                "| `OVC_SIGN_COMMITS` | Auto-sign all commits when set to `true` |\n",
+                "| `OVC_PORT` | API server port (default: `9742`) |\n",
+                "| `OVC_BIND` | API server bind address (default: `127.0.0.1`) |\n",
+                "| `OVC_REPOS_DIR` | API server repository directory |\n",
+                "| `OVC_JWT_SECRET` | JWT secret for API authentication |\n",
+                "| `OVC_CORS_ORIGINS` | Allowed CORS origins |\n",
+                "| `OVC_WORKDIR_SCAN` | Directories to scan for `.ovc-link` files |\n",
+                "| `OVC_WORKDIR_MAP` | Explicit repo-to-workdir mappings (`repo_id:/path`, comma-separated) |\n",
+                "| `OVC_REPO` | Path to the `.ovc` repository file |",
+            ).into(),
+            tags: vec!["environment".into(), "env".into(), "variable".into(), "config".into(),
+                       "password".into(), "jwt".into(), "port".into(), "author".into(),
+                       "sign".into(), "workdir".into()],
+        },
+    ]
+}
+
+/// Builds UI guide documentation sections.
+#[allow(clippy::too_many_lines)]
+fn ui_docs() -> Vec<DocSection> {
+    vec![
+        DocSection {
+            id: "getting-started".into(),
+            category: "ui".into(),
+            title: "Getting Started with the Web UI".into(),
+            content: concat!(
+                "# Getting Started with the Web UI\n\n",
+                "The OVC web UI is a single-page application served by the `ovc serve` command.\n",
+                "Access it by navigating to `http://localhost:9742` (or your configured port).\n\n",
+                "## First Steps\n\n",
+                "1. **Start the server:** Run `ovc serve --repos-dir /path/to/repos`\n",
+                "2. **Open the UI:** Navigate to `http://localhost:9742` in your browser, or run `ovc web`\n",
+                "3. **Login:** Enter credentials (the JWT token is stored in the browser)\n",
+                "4. **Select a repository:** The repo list shows all `.ovc` files in the repos directory\n\n",
+                "## Navigation\n\n",
+                "The sidebar provides access to all major features:\n",
+                "- **History** — Commit graph and log\n",
+                "- **Files** — File tree browser\n",
+                "- **Branches** — Branch management\n",
+                "- **Tags** — Tag management\n",
+                "- **Changes** — Staged/unstaged file status\n",
+                "- **Pull Requests** — PR management\n",
+                "- **Actions** — CI/CD dashboard\n",
+                "- **Dependencies** — Dependency update tracking\n",
+                "- **Stash** — Stash management\n",
+                "- **Search** — Code search\n",
+                "- **Settings** — Repository settings\n",
+                "- **Access Control** — User roles and branch protection",
+            ).into(),
+            tags: vec!["getting started".into(), "setup".into(), "login".into(),
+                       "navigation".into(), "sidebar".into(), "ui".into()],
+        },
+        DocSection {
+            id: "commit-graph".into(),
+            category: "ui".into(),
+            title: "Commit Graph & History".into(),
+            content: concat!(
+                "# Commit Graph & History\n\n",
+                "The History page displays the commit log as an interactive graph with branch\n",
+                "topology visualization.\n\n",
+                "## Features\n\n",
+                "- **Branch graph** — Visual representation of branch topology with color-coded\n",
+                "  branch lines, merge commits, and divergence points\n",
+                "- **Commit list** — Each commit shows hash, author, date, and message\n",
+                "- **Commit detail** — Click a commit to view its full details including diff\n",
+                "- **Pagination** — Loads commits incrementally for large repositories\n",
+                "- **Branch filter** — Toggle between current branch and all branches view\n",
+                "- **Signature status** — Shows verification status for signed commits\n\n",
+                "## Commit Actions\n\n",
+                "Right-click or use the action menu on a commit to:\n",
+                "- **View diff** — See all changes in the commit\n",
+                "- **Cherry-pick** — Apply the commit to the current branch\n",
+                "- **Create branch** — Create a new branch at this commit\n",
+                "- **Create tag** — Tag this commit\n",
+                "- **Revert** — Create a revert commit\n",
+                "- **Copy hash** — Copy the commit ID to clipboard",
+            ).into(),
+            tags: vec!["commit".into(), "graph".into(), "history".into(), "log".into(),
+                       "branch".into(), "topology".into(), "visualization".into()],
+        },
+        DocSection {
+            id: "branch-tag-management".into(),
+            category: "ui".into(),
+            title: "Branch & Tag Management".into(),
+            content: concat!(
+                "# Branch & Tag Management\n\n",
+                "## Branches\n\n",
+                "The Branches page lists all local branches with their HEAD commits.\n\n",
+                "**Operations:**\n",
+                "- **Create branch** — Click \"New Branch\", enter a name and optional start point\n",
+                "- **Switch branch** — Click a branch name to check it out\n",
+                "- **Delete branch** — Click the delete icon next to a branch\n",
+                "- **Merge** — Click the merge button to merge a branch into the current branch\n",
+                "- **Rename** — Right-click to rename a branch (via context menu)\n\n",
+                "The current branch is highlighted with a distinct indicator.\n\n",
+                "## Tags\n\n",
+                "The Tags page lists all tags with their associated commits.\n\n",
+                "**Operations:**\n",
+                "- **Create tag** — Click \"New Tag\", enter a name and optional message\n",
+                "- **Delete tag** — Click the delete icon next to a tag\n",
+                "- **View tagged commit** — Click a tag to navigate to the associated commit",
+            ).into(),
+            tags: vec!["branch".into(), "tag".into(), "create".into(), "delete".into(),
+                       "merge".into(), "checkout".into(), "rename".into()],
+        },
+        DocSection {
+            id: "diff-viewer".into(),
+            category: "ui".into(),
+            title: "Diff Viewer".into(),
+            content: concat!(
+                "# Diff Viewer\n\n",
+                "The diff viewer shows changes between commits, branches, or working tree\n",
+                "states with syntax-highlighted diffs.\n\n",
+                "## View Modes\n\n",
+                "- **Split view** — Side-by-side comparison with old content on the left and\n",
+                "  new content on the right\n",
+                "- **Unified view** — Interleaved diff format showing additions and deletions\n",
+                "  inline\n\n",
+                "Toggle between modes using the view mode selector at the top of the diff.\n\n",
+                "## Features\n\n",
+                "- **Syntax highlighting** — Language-aware syntax coloring in diff content\n",
+                "- **Hunk navigation** — Jump between changed sections (hunks)\n",
+                "- **Line numbers** — Both old and new line numbers are displayed\n",
+                "- **File list** — Click file names in the sidebar to navigate to that file's diff\n",
+                "- **Expand context** — Show more surrounding lines around changes\n",
+                "- **Stats summary** — Files changed, insertions, and deletions count",
+            ).into(),
+            tags: vec!["diff".into(), "split".into(), "unified".into(), "compare".into(),
+                       "changes".into(), "syntax".into(), "highlighting".into()],
+        },
+        DocSection {
+            id: "blame-view".into(),
+            category: "ui".into(),
+            title: "Blame View".into(),
+            content: concat!(
+                "# Blame View\n\n",
+                "The Blame page shows line-by-line authorship for any file in the repository.\n\n",
+                "## Features\n\n",
+                "- **Author column** — Shows who last modified each line\n",
+                "- **Commit hash** — Click the hash to view the full commit\n",
+                "- **Date** — When each line was last changed\n",
+                "- **Syntax highlighting** — Code is syntax-highlighted by language\n",
+                "- **Line range** — Navigate to specific line ranges via URL parameters\n\n",
+                "## Navigation\n\n",
+                "Access blame from:\n",
+                "- File tree: right-click a file and select \"Blame\"\n",
+                "- Diff viewer: click the blame icon on a changed file\n",
+                "- Direct URL: `/repos/:id/blame/:path`",
+            ).into(),
+            tags: vec!["blame".into(), "author".into(), "annotation".into(),
+                       "line".into(), "file".into()],
+        },
+        DocSection {
+            id: "code-search".into(),
+            category: "ui".into(),
+            title: "Code Search".into(),
+            content: concat!(
+                "# Code Search\n\n",
+                "The Search page provides full-text search across all tracked files in the\n",
+                "repository.\n\n",
+                "## Features\n\n",
+                "- **Regex support** — Search using regular expressions\n",
+                "- **Case sensitivity** — Toggle case-sensitive or case-insensitive search\n",
+                "- **File results** — Results grouped by file with matching line numbers\n",
+                "- **Match preview** — Shows surrounding context for each match\n",
+                "- **Click to navigate** — Click a result to view the file at that line\n\n",
+                "## Search Tips\n\n",
+                "- Use simple terms for broad searches\n",
+                "- Use regex patterns for precise matching\n",
+                "- Results are limited to text files (binary files are excluded)",
+            ).into(),
+            tags: vec!["search".into(), "grep".into(), "find".into(), "regex".into(),
+                       "code".into()],
+        },
+        DocSection {
+            id: "commit-actions".into(),
+            category: "ui".into(),
+            title: "Commit Actions".into(),
+            content: concat!(
+                "# Commit Actions\n\n",
+                "The UI provides several operations you can perform on commits through context\n",
+                "menus and action buttons.\n\n",
+                "## Available Actions\n\n",
+                "- **Cherry-pick** — Apply a commit's changes to the current branch. Opens a\n",
+                "  confirmation dialog showing the commit being applied.\n",
+                "- **Create branch from commit** — Create a new branch pointing at a specific\n",
+                "  commit. Enter the branch name in the dialog.\n",
+                "- **Create tag** — Tag a commit with a name and optional annotation message.\n",
+                "- **Revert** — Create a new commit that undoes the changes introduced by the\n",
+                "  selected commit.\n",
+                "- **View diff** — Open the full diff view for the commit.\n",
+                "- **Copy commit hash** — Copy the full commit ID to the clipboard.\n\n",
+                "All destructive operations show a confirmation dialog before proceeding.",
+            ).into(),
+            tags: vec!["cherry-pick".into(), "tag".into(), "branch".into(), "revert".into(),
+                       "commit".into(), "context menu".into()],
+        },
+        DocSection {
+            id: "pull-requests".into(),
+            category: "ui".into(),
+            title: "Pull Request Management".into(),
+            content: concat!(
+                "# Pull Request Management\n\n",
+                "The Pull Requests page provides a full PR workflow within OVC.\n\n",
+                "## Creating a Pull Request\n\n",
+                "1. Navigate to **Pull Requests** in the sidebar\n",
+                "2. Click **\"New Pull Request\"**\n",
+                "3. Select the source branch and target branch\n",
+                "4. Enter a title and description\n",
+                "5. Click **\"Create\"**\n\n",
+                "## Reviewing a Pull Request\n\n",
+                "- **Diff view** — See all changes between the source and target branches\n",
+                "- **Commit list** — View individual commits in the PR\n",
+                "- **Status checks** — Run and view action results for the PR\n\n",
+                "## PR Reviews & Comments\n\n",
+                "### Submitting Reviews\n\n",
+                "Click the **\"Review\"** button on a pull request to submit a review:\n",
+                "- **Approve** — Approve the PR for merging\n",
+                "- **Request Changes** — Request modifications before the PR can be merged\n",
+                "- **Comment** — Leave feedback without approving or requesting changes\n\n",
+                "Each review includes an optional summary comment.\n\n",
+                "### Inline File Comments\n\n",
+                "Add comments on specific lines of changed files:\n",
+                "1. Hover over a line number in the diff view\n",
+                "2. Click the comment icon that appears\n",
+                "3. Enter your comment and submit\n\n",
+                "Inline comments reference the file path and line number for precise feedback.\n\n",
+                "### Review Verification Badges\n\n",
+                "Reviews from users with verified Ed25519 keys display a verification badge, ",
+                "confirming the review was submitted by the key holder.\n\n",
+                "## PR Operations\n\n",
+                "- **Merge** — Merge the PR into the target branch (creates a merge commit)\n",
+                "- **Close** — Close the PR without merging\n",
+                "- **Update** — Edit the title or description of an open PR\n",
+                "- **Run checks** — Manually trigger action checks on the PR\n\n",
+                "## PR Status\n\n",
+                "Pull requests display their current status:\n",
+                "- **Open** — Active and awaiting review/merge\n",
+                "- **Merged** — Successfully merged into the target branch\n",
+                "- **Closed** — Closed without merging",
+            ).into(),
+            tags: vec!["pull request".into(), "pr".into(), "merge".into(), "review".into(),
+                       "create".into(), "close".into(), "checks".into(), "comment".into(),
+                       "approve".into(), "inline".into(), "verification".into()],
+        },
+        DocSection {
+            id: "sync-panel".into(),
+            category: "ui".into(),
+            title: "Sync Panel".into(),
+            content: concat!(
+                "# Sync Panel\n\n",
+                "The Sync panel provides a visual interface for push, pull, and sync operations ",
+                "with remote repositories.\n\n",
+                "## Push\n\n",
+                "Push local commits to the configured remote. The panel shows the number of ",
+                "outgoing commits and the target remote before confirming.\n\n",
+                "## Pull\n\n",
+                "Pull the latest changes from the remote. Incoming changes are previewed ",
+                "before applying.\n\n",
+                "## Sync\n\n",
+                "For shared `.ovc` file workflows (iCloud, Google Drive), the Sync button ",
+                "imports remote branches, tags, objects, and notes in a single operation.\n\n",
+                "## Status Indicators\n\n",
+                "- **Ahead** — Number of local commits not yet pushed\n",
+                "- **Behind** — Number of remote commits not yet pulled\n",
+                "- **Up to date** — Local and remote are in sync\n",
+                "- **Diverged** — Both local and remote have new commits (requires merge or rebase)",
+            ).into(),
+            tags: vec!["sync".into(), "push".into(), "pull".into(), "remote".into(),
+                       "ahead".into(), "behind".into(), "icloud".into()],
+        },
+        DocSection {
+            id: "actions-dashboard".into(),
+            category: "ui".into(),
+            title: "Actions Dashboard".into(),
+            content: concat!(
+                "# Actions Dashboard\n\n",
+                "The Actions page provides a CI/CD-style dashboard for managing and running\n",
+                "repository actions.\n\n",
+                "## Dashboard View\n\n",
+                "- **Action cards** — Each configured action shows its name, category,\n",
+                "  trigger, and last run status (passed/failed/skipped)\n",
+                "- **Run button** — Run individual actions or all actions at once\n",
+                "- **Fix mode** — Toggle fix mode to run fix commands where available\n",
+                "- **Status indicators** — Color-coded status badges for each action\n\n",
+                "## Run History\n\n",
+                "- **Run list** — View past action runs with timestamps, duration, and\n",
+                "  overall status\n",
+                "- **Run details** — Click a run to see per-action results including stdout,\n",
+                "  stderr, and exit codes\n",
+                "- **Clear history** — Remove all run history records\n\n",
+                "## Running Actions\n\n",
+                "1. Click **\"Run All\"** to run all actions for the `manual` trigger\n",
+                "2. Or click the play button on individual action cards\n",
+                "3. Results appear in real-time with pass/fail indicators\n",
+                "4. Failed actions show stdout/stderr output for debugging\n\n",
+                "## Docker Status\n\n",
+                "The actions dashboard shows Docker availability status, indicating whether\n",
+                "containerized actions can run.",
+            ).into(),
+            tags: vec!["actions".into(), "dashboard".into(), "run".into(), "ci".into(),
+                       "cd".into(), "lint".into(), "format".into(), "test".into(),
+                       "docker".into(), "status".into()],
+        },
+        DocSection {
+            id: "dependency-updates".into(),
+            category: "ui".into(),
+            title: "Dependency Updates".into(),
+            content: concat!(
+                "# Dependency Updates\n\n",
+                "The Dependencies page provides Dependabot-style dependency update management.\n\n",
+                "## Checking for Updates\n\n",
+                "1. Navigate to **Dependencies** in the sidebar\n",
+                "2. The page automatically scans all manifest files (Cargo.toml, package.json,\n",
+                "   pyproject.toml, go.mod, etc.)\n",
+                "3. Outdated dependencies are listed with current and latest versions\n",
+                "4. Updates are categorized as **major**, **minor**, or **patch**\n\n",
+                "## Creating Update Proposals\n\n",
+                "1. Click **\"Update All\"** or select specific dependencies to update\n",
+                "2. OVC creates a branch for each update (e.g., `deps/cargo/serde-1.0.200`)\n",
+                "3. Each branch contains a single commit modifying the manifest file\n",
+                "4. Mergeability is checked automatically (conflict detection)\n\n",
+                "## Managing Proposals\n\n",
+                "- **View proposals** — See all pending dependency update branches\n",
+                "- **Merge** — Merge an update branch into the current branch\n",
+                "- **Create PR** — Convert a proposal into a pull request for review\n",
+                "- **Delete** — Remove an update branch if the update is unwanted\n\n",
+                "## Supported Package Managers\n\n",
+                "Cargo (Rust), npm (JavaScript), pip/pyproject (Python), Go modules,\n",
+                "Composer (PHP), RubyGems, Maven (Java), pub (Dart), Hex (Elixir),\n",
+                "CocoaPods (iOS), NuGet (.NET)",
+            ).into(),
+            tags: vec!["dependency".into(), "update".into(), "dependabot".into(),
+                       "cargo".into(), "npm".into(), "pip".into(), "outdated".into(),
+                       "proposal".into(), "merge".into()],
+        },
+        DocSection {
+            id: "stash-management-ui".into(),
+            category: "ui".into(),
+            title: "Stash Management".into(),
+            content: concat!(
+                "# Stash Management\n\n",
+                "The Stash panel allows you to save and restore index states through the UI.\n\n",
+                "## Features\n\n",
+                "- **Stash list** — View all saved stash entries with their messages and\n",
+                "  timestamps\n",
+                "- **Push** — Save the current index state with a description message\n",
+                "- **Pop** — Restore and remove the most recent stash entry\n",
+                "- **Apply** — Restore a stash entry without removing it\n",
+                "- **Drop** — Remove a stash entry without restoring\n",
+                "- **Clear** — Remove all stash entries\n",
+                "- **Preview** — View the contents of a stash entry before applying",
+            ).into(),
+            tags: vec!["stash".into(), "save".into(), "restore".into(), "wip".into(),
+                       "temporary".into()],
+        },
+        DocSection {
+            id: "settings-page".into(),
+            category: "ui".into(),
+            title: "Settings Page".into(),
+            content: concat!(
+                "# Settings Page\n\n",
+                "The Settings page provides repository-level configuration through the web UI.\n\n",
+                "## Identity Configuration\n\n",
+                "- **Author name** — Set the default commit author name\n",
+                "- **Author email** — Set the default commit author email\n\n",
+                "These values are used when creating commits through the UI.\n\n",
+                "## Default Branch\n\n",
+                "Change the repository's default branch. The default branch is used as the ",
+                "target for new pull requests and is shown by default in the commit graph.\n\n",
+                "## Garbage Collection\n\n",
+                "Run garbage collection to reclaim storage from unreachable objects. ",
+                "A dry-run option lets you preview what would be removed before committing.\n\n",
+                "## Archive\n\n",
+                "Export the repository tree at any ref as a `tar` or `zip` archive. ",
+                "Select the branch, tag, or commit to archive and the desired format.\n\n",
+                "## Submodules\n\n",
+                "View and manage submodule references. Add, update, or remove submodules ",
+                "that link to other OVC repositories.\n\n",
+                "## Remotes\n\n",
+                "Manage remote repository connections:\n",
+                "- **Add remote** — Configure a new remote with name, URL, and backend type\n",
+                "- **Remove remote** — Delete a remote configuration\n",
+                "- **List remotes** — View all configured remotes\n\n",
+                "## Repository Deletion\n\n",
+                "Permanently delete the repository. This action requires confirmation and ",
+                "cannot be undone. The `.ovc` file and all associated data are removed.",
+            ).into(),
+            tags: vec!["settings".into(), "configuration".into(), "identity".into(),
+                       "default branch".into(), "gc".into(), "archive".into(),
+                       "submodule".into(), "remote".into(), "delete".into()],
+        },
+        DocSection {
+            id: "access-control-page".into(),
+            category: "ui".into(),
+            title: "Access Control Page".into(),
+            content: concat!(
+                "# Access Control Page\n\n",
+                "The Access Control page manages user permissions and branch protection rules ",
+                "through the web UI.\n\n",
+                "## User List\n\n",
+                "View all authorized users with their:\n",
+                "- **Key fingerprint** — Ed25519 key fingerprint for identification\n",
+                "- **Identity** — Name and email associated with the key\n",
+                "- **Role** — Current access level (`read`, `write`, `admin`, `owner`)\n\n",
+                "## Granting Access\n\n",
+                "1. Click **\"Grant Access\"**\n",
+                "2. Paste or upload the user's public key\n",
+                "3. Select a role from the dropdown\n",
+                "4. Click **\"Grant\"**\n\n",
+                "## Revoking Access\n\n",
+                "Click the revoke button next to a user to remove their access. ",
+                "The owner role cannot be revoked (transfer ownership first).\n\n",
+                "## Changing Roles\n\n",
+                "Click the role badge next to a user to change their access level. ",
+                "Only `admin` and `owner` roles can modify other users' roles.\n\n",
+                "## Branch Protection Rules\n\n",
+                "Configure protection for specific branches:\n\n",
+                "- **Required approvals** — Set the minimum number of PR approvals before merge\n",
+                "- **Require CI** — Require all configured CI actions to pass before merge\n",
+                "- **Block force push** — Prevent force-pushing to the protected branch\n\n",
+                "### Managing Rules\n\n",
+                "1. Click **\"Add Rule\"**\n",
+                "2. Enter the branch name or pattern (e.g., `main`, `release/*`)\n",
+                "3. Configure required approvals and CI requirements\n",
+                "4. Click **\"Save\"**\n\n",
+                "Existing rules can be edited or removed from the rules list.",
+            ).into(),
+            tags: vec!["access control".into(), "rbac".into(), "role".into(),
+                       "grant".into(), "revoke".into(), "branch protection".into(),
+                       "approvals".into(), "ci".into(), "permissions".into()],
+        },
+        DocSection {
+            id: "command-palette".into(),
+            category: "ui".into(),
+            title: "Command Palette".into(),
+            content: concat!(
+                "# Command Palette\n\n",
+                "Press **Cmd+K** (macOS) or **Ctrl+K** (Windows/Linux) to open the command\n",
+                "palette — a quick-access search interface for navigating and executing\n",
+                "actions.\n\n",
+                "## Features\n\n",
+                "- **Fuzzy search** — Type to filter available commands and navigation targets\n",
+                "- **Quick navigation** — Jump to any page (History, Branches, Tags, etc.)\n",
+                "- **Repository switching** — Switch between repositories\n",
+                "- **Action execution** — Run common actions directly from the palette\n",
+                "- **Keyboard-driven** — Navigate results with arrow keys, select with Enter,\n",
+                "  dismiss with Escape\n\n",
+                "## Available Commands\n\n",
+                "The palette provides access to all major navigation targets and frequently\n",
+                "used operations without requiring mouse interaction.",
+            ).into(),
+            tags: vec!["command palette".into(), "cmd+k".into(), "ctrl+k".into(),
+                       "keyboard".into(), "search".into(), "quick access".into(),
+                       "navigation".into()],
+        },
+        DocSection {
+            id: "keyboard-shortcuts".into(),
+            category: "ui".into(),
+            title: "Keyboard Shortcuts".into(),
+            content: concat!(
+                "# Keyboard Shortcuts\n\n",
+                "The OVC web UI supports keyboard shortcuts for efficient navigation and\n",
+                "operations.\n\n",
+                "## Global Shortcuts\n\n",
+                "| Shortcut | Action |\n",
+                "|---|---|\n",
+                "| `Cmd+K` / `Ctrl+K` | Open command palette |\n",
+                "| `Escape` | Close dialogs, modals, and palette |\n\n",
+                "## Navigation\n\n",
+                "Use the command palette (`Cmd+K`) for keyboard-driven navigation to any page\n",
+                "or repository.",
+            ).into(),
+            tags: vec!["keyboard".into(), "shortcut".into(), "hotkey".into(),
+                       "keybinding".into(), "cmd+k".into()],
+        },
+        DocSection {
+            id: "actions-configuration".into(),
+            category: "ui".into(),
+            title: "Actions Configuration".into(),
+            content: concat!(
+                "# Actions Configuration\n\n",
+                "Actions are configured in `.ovc/actions.yml` using YAML format.\n\n",
+                "## YAML Structure\n\n",
+                "```yaml\n",
+                "defaults:\n",
+                "  timeout: 300\n",
+                "  continue_on_error: false\n",
+                "  docker:\n",
+                "    enabled: false\n",
+                "    image: \"ubuntu:latest\"\n",
+                "    pull_policy: \"if-not-present\"\n\n",
+                "actions:\n",
+                "  rust-check:\n",
+                "    category: build\n",
+                "    display_name: \"Cargo Check\"\n",
+                "    language: rust\n",
+                "    tool: cargo\n",
+                "    command: \"cargo check --workspace\"\n",
+                "    trigger: pre-commit\n",
+                "    timeout: 120\n\n",
+                "  rust-fmt:\n",
+                "    category: format\n",
+                "    display_name: \"Cargo Fmt\"\n",
+                "    language: rust\n",
+                "    tool: cargo\n",
+                "    command: \"cargo fmt -- --check\"\n",
+                "    fix_command: \"cargo fmt\"\n",
+                "    trigger: pre-commit\n\n",
+                "  rust-clippy:\n",
+                "    category: lint\n",
+                "    display_name: \"Clippy\"\n",
+                "    language: rust\n",
+                "    tool: cargo\n",
+                "    command: \"cargo clippy --workspace -- -D warnings\"\n",
+                "    trigger: pre-commit\n\n",
+                "branch_protection:\n",
+                "  - pattern: \"main\"\n",
+                "    require_checks: true\n",
+                "    required_actions: [\"rust-check\", \"rust-clippy\"]\n",
+                "    block_force_push: true\n",
+                "```\n\n",
+                "## Action Fields\n\n",
+                "| Field | Type | Description |\n",
+                "|---|---|---|\n",
+                "| `category` | string | `lint`, `format`, `build`, `test`, `audit`, `builtin`, `custom` |\n",
+                "| `display_name` | string | Human-friendly name |\n",
+                "| `language` | string | Target programming language |\n",
+                "| `tool` | string | External tool name |\n",
+                "| `command` | string | Shell command to run |\n",
+                "| `fix_command` | string | Auto-fix command |\n",
+                "| `trigger` | string | `pre-commit`, `post-commit`, `pre-push`, `pre-merge`, `post-merge`, `on-fail`, `pull-request`, `manual`, `schedule` |\n",
+                "| `timeout` | number | Timeout in seconds |\n",
+                "| `working_dir` | string | Working directory override |\n",
+                "| `env` | object | Extra environment variables |\n",
+                "| `continue_on_error` | boolean | If true, failures do not block the pipeline |\n",
+                "| `condition` | object | Condition restricting when the action runs |\n",
+                "| `schedule` | string | Cron-like schedule expression |\n",
+                "| `builtin` | string | Use a built-in action instead of a shell command |\n\n",
+                "## Built-in Actions\n\n",
+                "- `dependency_update_check` — Scan manifest files for outdated dependencies\n\n",
+                "## Triggers\n\n",
+                "| Trigger | When |\n",
+                "|---|---|\n",
+                "| `pre-commit` | Before a commit is created |\n",
+                "| `post-commit` | After a commit is created |\n",
+                "| `pre-push` | Before pushing to a remote |\n",
+                "| `pre-merge` | Before merging branches |\n",
+                "| `post-merge` | After merging branches |\n",
+                "| `on-fail` | When a previous action fails |\n",
+                "| `pull-request` | When a pull request is opened or updated |\n",
+                "| `manual` | Only when explicitly triggered |\n",
+                "| `schedule` | On a cron-like schedule |\n\n",
+                "## Branch Protection\n\n",
+                "Branch protection rules enforce required checks before merge or push:\n\n",
+                "```yaml\n",
+                "branch_protection:\n",
+                "  - pattern: \"main\"\n",
+                "    require_checks: true\n",
+                "    required_actions: [\"rust-check\", \"rust-clippy\", \"rust-test\"]\n",
+                "    block_force_push: true\n",
+                "```",
+            ).into(),
+            tags: vec!["actions".into(), "configuration".into(), "yaml".into(),
+                       "trigger".into(), "branch protection".into(), "builtin".into(),
+                       "lint".into(), "format".into(), "test".into(), "pre-commit".into(),
+                       "schedule".into(), "docker".into()],
+        },
+    ]
+}
+
+/// Returns the combined documentation from all categories.
+fn all_docs() -> Vec<DocSection> {
+    let mut docs = cli_docs();
+    docs.extend(ui_docs());
+    docs
+}
+
+// ── Handlers ─────────────────────────────────────────────────────────────
+
+/// `GET /api/v1/docs`
+///
+/// Returns the full documentation index with categories and section summaries.
+pub async fn get_docs_index() -> Json<DocsIndexResponse> {
+    let docs = all_docs();
+
+    let mut cli_sections = Vec::new();
+    let mut ui_sections = Vec::new();
+
+    for doc in &docs {
+        let summary = DocSectionSummary {
+            id: doc.id.clone(),
+            title: doc.title.clone(),
+            tags: doc.tags.clone(),
+        };
+        match doc.category.as_str() {
+            "cli" => cli_sections.push(summary),
+            "ui" => ui_sections.push(summary),
+            _ => {}
+        }
+    }
+
+    Json(DocsIndexResponse {
+        categories: vec![
+            DocCategory {
+                id: "cli".into(),
+                title: "CLI Reference".into(),
+                sections: cli_sections,
+            },
+            DocCategory {
+                id: "ui".into(),
+                title: "UI Guide".into(),
+                sections: ui_sections,
+            },
+        ],
+    })
+}
+
+/// `GET /api/v1/docs/search?q=<query>`
+///
+/// Full-text search across all documentation sections. Returns matching
+/// sections with relevance scoring.
+pub async fn search_docs(
+    Query(query): Query<SearchQuery>,
+) -> Result<Json<DocsSearchResponse>, ApiError> {
+    let q = query.q.trim();
+    if q.is_empty() {
+        return Err(ApiError::bad_request("search query must not be empty"));
+    }
+    // Limit query length to prevent abuse.
+    if q.len() > 200 {
+        return Err(ApiError::bad_request(
+            "search query must not exceed 200 characters",
+        ));
+    }
+
+    let docs = all_docs();
+    let query_lower = q.to_lowercase();
+    let query_terms: Vec<&str> = query_lower.split_whitespace().collect();
+
+    let mut results: Vec<DocSearchResult> = Vec::new();
+
+    for doc in &docs {
+        let title_lower = doc.title.to_lowercase();
+        let content_lower = doc.content.to_lowercase();
+        let tags_lower: Vec<String> = doc.tags.iter().map(|t| t.to_lowercase()).collect();
+
+        let mut score: u32 = 0;
+        let mut matched_tags = Vec::new();
+
+        for term in &query_terms {
+            // Title match (highest weight).
+            if title_lower.contains(term) {
+                score += 10;
+            }
+            // Tag match (high weight).
+            for (idx, tag) in tags_lower.iter().enumerate() {
+                if tag.contains(term) {
+                    score += 5;
+                    let original_tag = &doc.tags[idx];
+                    if !matched_tags.contains(original_tag) {
+                        matched_tags.push(original_tag.clone());
+                    }
+                }
+            }
+            // Content match (base weight).
+            if content_lower.contains(term) {
+                score += 2;
+                // Bonus for exact multi-word match.
+                if query_terms.len() > 1 && content_lower.contains(&query_lower) {
+                    score += 3;
+                }
+            }
+        }
+
+        if score > 0 {
+            // Extract a snippet around the first match in content.
+            let snippet = extract_snippet(&doc.content, &query_lower, 150);
+
+            results.push(DocSearchResult {
+                id: doc.id.clone(),
+                category: doc.category.clone(),
+                title: doc.title.clone(),
+                snippet,
+                score,
+                matched_tags,
+            });
+        }
+    }
+
+    // Sort by score descending.
+    results.sort_by(|a, b| b.score.cmp(&a.score));
+
+    let total = results.len();
+    Ok(Json(DocsSearchResponse {
+        query: q.to_owned(),
+        results,
+        total,
+    }))
+}
+
+/// `GET /api/v1/docs/:category/:section`
+///
+/// Returns the full content of a specific documentation section.
+pub async fn get_doc_section(
+    Path((category, section)): Path<(String, String)>,
+) -> Result<Json<DocSection>, ApiError> {
+    let docs = all_docs();
+
+    docs.into_iter()
+        .find(|d| d.category == category && d.id == section)
+        .map(Json)
+        .ok_or_else(|| {
+            ApiError::not_found(&format!("doc section '{category}/{section}' not found"))
+        })
+}
+
+/// Extract a text snippet around the first occurrence of the query in the content.
+fn extract_snippet(content: &str, query_lower: &str, max_len: usize) -> String {
+    let content_lower = content.to_lowercase();
+    let first_term = query_lower.split_whitespace().next().unwrap_or(query_lower);
+
+    content_lower.find(first_term).map_or_else(
+        || {
+            // No match in content — return the first `max_len` chars.
+            let end = max_len.min(content.len());
+            let end = content[..end].rfind(char::is_whitespace).unwrap_or(end);
+            let mut snippet = content[..end].to_owned();
+            if end < content.len() {
+                snippet.push_str("...");
+            }
+            snippet
+        },
+        |pos| {
+            // Find a reasonable start position (snap to whitespace).
+            let start = if pos > max_len / 2 {
+                let search_start = pos - max_len / 2;
+                content[search_start..]
+                    .find(char::is_whitespace)
+                    .map_or(search_start, |ws| search_start + ws + 1)
+            } else {
+                0
+            };
+
+            let end = (start + max_len).min(content.len());
+            // Snap end to whitespace.
+            let end = content[..end].rfind(char::is_whitespace).unwrap_or(end);
+
+            let mut snippet = String::new();
+            if start > 0 {
+                snippet.push_str("...");
+            }
+            snippet.push_str(content[start..end].trim());
+            if end < content.len() {
+                snippet.push_str("...");
+            }
+            snippet
+        },
+    )
+}

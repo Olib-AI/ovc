@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OVC — Secure Self-Hosted Version Control</title>
+<meta name="description" content="Encrypted single-file version control. Every repo is one encrypted .ovc file you can store anywhere. Ed25519 encryption, Git interop, built-in CI/CD, web UI — all in a single 16 MB binary.">
+<meta name="theme-color" content="#0a0e14">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-deep:#060a10;
+  --bg-primary:#0a0e14;
+  --bg-elevated:#0f1520;
+  --bg-card:#111927;
+  --border:#1a2435;
+  --border-bright:#243049;
+  --text-primary:#e0e6f0;
+  --text-secondary:#7a8ba8;
+  --text-dim:#4a5874;
+  --cyan:#22d3ee;
+  --cyan-dim:#0e7490;
+  --cyan-glow:rgba(34,211,238,0.15);
+  --cyan-glow-strong:rgba(34,211,238,0.3);
+  --teal:#14b8a6;
+  --green:#34d399;
+  --amber:#fbbf24;
+  --font-display:'Outfit',system-ui,sans-serif;
+  --font-mono:'DM Mono',ui-monospace,'Cascadia Code','Fira Code',monospace;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  font-family:var(--font-display);
+  background:var(--bg-deep);
+  color:var(--text-primary);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--cyan-glow-strong);color:var(--cyan)}
+
+/* ── Noise overlay ─────────────────────────────────────────── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  opacity:0.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── Container ─────────────────────────────────────────────── */
+.container{max-width:1140px;margin:0 auto;padding:0 24px}
+.container-narrow{max-width:860px;margin:0 auto;padding:0 24px}
+
+/* ── Navigation ────────────────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(6,10,16,0.85);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-inner{
+  max-width:1140px;margin:0 auto;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:60px;
+}
+.nav-logo{
+  font-family:var(--font-mono);font-weight:500;font-size:1.125rem;
+  color:var(--text-primary);text-decoration:none;
+  letter-spacing:0.05em;
+}
+.nav-logo span{color:var(--cyan)}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{
+  font-size:0.8125rem;color:var(--text-secondary);text-decoration:none;
+  letter-spacing:0.03em;font-weight:400;
+  transition:color 0.2s;
+}
+.nav-links a:hover{color:var(--text-primary)}
+.nav-gh{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:6px;
+  border:1px solid var(--border-bright);
+  font-size:0.8125rem;color:var(--text-secondary);text-decoration:none;
+  transition:border-color 0.2s,color 0.2s;
+}
+.nav-gh:hover{border-color:var(--cyan-dim);color:var(--text-primary)}
+.nav-gh svg{width:16px;height:16px;fill:currentColor}
+
+/* ── Hero ──────────────────────────────────────────────────── */
+.hero{
+  padding:160px 0 100px;position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);
+  width:900px;height:900px;
+  background:radial-gradient(ellipse,var(--cyan-glow) 0%,transparent 70%);
+  pointer-events:none;opacity:0.5;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:5px 14px 5px 8px;border-radius:100px;
+  border:1px solid var(--border-bright);
+  background:var(--bg-elevated);
+  font-size:0.75rem;color:var(--text-secondary);
+  letter-spacing:0.04em;
+  margin-bottom:28px;
+}
+.hero-badge-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 8px var(--cyan);
+  animation:pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:0.4}}
+.hero h1{
+  font-size:clamp(2.5rem,6vw,4.25rem);font-weight:800;
+  line-height:1.08;letter-spacing:-0.03em;
+  margin-bottom:20px;
+  max-width:700px;
+}
+.hero h1 .gradient{
+  background:linear-gradient(135deg,var(--cyan),var(--teal));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero-sub{
+  font-size:1.125rem;color:var(--text-secondary);
+  max-width:540px;line-height:1.7;font-weight:300;
+  margin-bottom:40px;
+}
+
+/* ── Install block ─────────────────────────────────────────── */
+.install-block{
+  background:var(--bg-primary);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:3px;
+  max-width:620px;
+  margin-bottom:20px;
+}
+.install-block-header{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 14px;
+  font-family:var(--font-mono);font-size:0.6875rem;
+  color:var(--text-dim);letter-spacing:0.06em;
+  text-transform:uppercase;
+}
+.install-block-header .dot{width:8px;height:8px;border-radius:50%}
+.install-block-header .dot:nth-child(1){background:#ff5f57}
+.install-block-header .dot:nth-child(2){background:#febc2e}
+.install-block-header .dot:nth-child(3){background:#28c840}
+.install-block-body{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;
+  background:var(--bg-elevated);
+  border-radius:8px;
+  gap:12px;
+}
+.install-cmd{
+  font-family:var(--font-mono);font-size:0.85rem;
+  color:var(--cyan);white-space:nowrap;overflow-x:auto;
+  flex:1;
+}
+.install-cmd .dim{color:var(--text-dim)}
+.copy-btn{
+  flex-shrink:0;background:none;border:1px solid var(--border-bright);
+  color:var(--text-secondary);border-radius:6px;
+  padding:6px 10px;cursor:pointer;
+  font-family:var(--font-mono);font-size:0.6875rem;
+  letter-spacing:0.04em;
+  transition:all 0.2s;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.copy-btn:hover{border-color:var(--cyan-dim);color:var(--text-primary)}
+.copy-btn.copied{border-color:var(--green);color:var(--green)}
+.copy-btn svg{width:14px;height:14px}
+.hero-note{
+  font-size:0.8rem;color:var(--text-dim);
+  font-family:var(--font-mono);
+}
+.hero-note a{color:var(--text-secondary);text-decoration:underline;text-decoration-color:var(--border-bright);text-underline-offset:3px}
+.hero-note a:hover{color:var(--cyan)}
+
+/* ── Hero visual — animated cipher ─────────────────────────── */
+.hero-visual{
+  position:absolute;right:-60px;top:140px;
+  width:420px;height:420px;opacity:0.08;
+  pointer-events:none;
+}
+@media(max-width:1000px){.hero-visual{display:none}}
+.hex-grid{
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--cyan);line-height:1.5;
+  white-space:pre;
+  animation:hex-scroll 30s linear infinite;
+}
+@keyframes hex-scroll{0%{transform:translateY(0)}100%{transform:translateY(-50%)}}
+
+/* ── Section basics ────────────────────────────────────────── */
+section{padding:100px 0}
+.section-label{
+  font-family:var(--font-mono);font-size:0.6875rem;
+  color:var(--cyan);letter-spacing:0.12em;text-transform:uppercase;
+  margin-bottom:16px;display:block;font-weight:500;
+}
+.section-title{
+  font-size:clamp(1.75rem,3.5vw,2.5rem);font-weight:700;
+  letter-spacing:-0.025em;line-height:1.15;
+  margin-bottom:16px;
+}
+.section-desc{
+  font-size:1rem;color:var(--text-secondary);
+  max-width:520px;font-weight:300;line-height:1.7;
+  margin-bottom:48px;
+}
+
+/* ── Feature grid ──────────────────────────────────────────── */
+.features-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+}
+@media(max-width:800px){.features-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.features-grid{grid-template-columns:1fr}}
+.feature-card{
+  background:var(--bg-primary);
+  padding:32px 28px;
+  transition:background 0.25s;
+}
+.feature-card:hover{background:var(--bg-elevated)}
+.feature-icon{
+  width:36px;height:36px;margin-bottom:18px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:8px;
+  background:var(--cyan-glow);
+  color:var(--cyan);
+}
+.feature-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.feature-card h3{
+  font-size:0.9375rem;font-weight:600;margin-bottom:8px;
+  letter-spacing:-0.01em;
+}
+.feature-card p{
+  font-size:0.8125rem;color:var(--text-secondary);
+  line-height:1.6;font-weight:300;
+}
+
+/* ── How it works ──────────────────────────────────────────── */
+.steps{display:flex;gap:32px;counter-reset:step}
+@media(max-width:700px){.steps{flex-direction:column}}
+.step{
+  flex:1;position:relative;counter-increment:step;
+  padding:32px 28px;
+  background:var(--bg-primary);
+  border:1px solid var(--border);
+  border-radius:12px;
+  transition:border-color 0.3s;
+}
+.step:hover{border-color:var(--border-bright)}
+.step::before{
+  content:counter(step,decimal-leading-zero);
+  font-family:var(--font-mono);font-size:0.6875rem;
+  color:var(--cyan);letter-spacing:0.08em;
+  display:block;margin-bottom:16px;
+  opacity:0.7;
+}
+.step h3{font-size:1rem;font-weight:600;margin-bottom:8px;letter-spacing:-0.01em}
+.step p{font-size:0.8125rem;color:var(--text-secondary);line-height:1.6;font-weight:300}
+.step code{
+  display:block;margin-top:14px;padding:10px 14px;
+  background:var(--bg-elevated);border-radius:6px;
+  font-family:var(--font-mono);font-size:0.75rem;
+  color:var(--cyan);white-space:pre;overflow-x:auto;
+}
+
+/* ── Security section ──────────────────────────────────────── */
+.security-layout{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+@media(max-width:800px){.security-layout{grid-template-columns:1fr}}
+.security-items{display:flex;flex-direction:column;gap:20px}
+.security-item{
+  display:flex;gap:14px;align-items:flex-start;
+}
+.security-item-icon{
+  flex-shrink:0;width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:6px;
+  border:1px solid var(--border-bright);
+  color:var(--cyan);font-family:var(--font-mono);font-size:0.625rem;
+  font-weight:500;letter-spacing:0.04em;
+}
+.security-item h4{font-size:0.875rem;font-weight:500;margin-bottom:3px}
+.security-item p{font-size:0.8rem;color:var(--text-secondary);line-height:1.55;font-weight:300}
+.security-diagram{
+  background:var(--bg-primary);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:28px;
+  font-family:var(--font-mono);font-size:0.72rem;
+  color:var(--text-secondary);line-height:1.9;
+  white-space:pre;overflow-x:auto;
+}
+.security-diagram .hl{color:var(--cyan)}
+.security-diagram .gr{color:var(--green)}
+.security-diagram .am{color:var(--amber)}
+
+/* ── Quick Start ───────────────────────────────────────────── */
+.quickstart-block{
+  background:var(--bg-primary);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+}
+.qs-tabs{
+  display:flex;border-bottom:1px solid var(--border);
+  background:var(--bg-elevated);
+}
+.qs-tab{
+  padding:10px 20px;
+  font-family:var(--font-mono);font-size:0.72rem;
+  color:var(--text-dim);letter-spacing:0.04em;
+  cursor:pointer;border:none;background:none;
+  border-bottom:2px solid transparent;
+  transition:all 0.2s;
+}
+.qs-tab:hover{color:var(--text-secondary)}
+.qs-tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+.qs-content{display:none;padding:24px 28px}
+.qs-content.active{display:block}
+.qs-content pre{
+  font-family:var(--font-mono);font-size:0.78rem;
+  line-height:1.8;color:var(--text-secondary);
+  overflow-x:auto;
+}
+.qs-content pre .comment{color:var(--text-dim)}
+.qs-content pre .cmd{color:var(--text-primary)}
+.qs-content pre .flag{color:var(--cyan)}
+.qs-content pre .str{color:var(--green)}
+
+/* ── Stats bar ─────────────────────────────────────────────── */
+.stats{
+  display:flex;justify-content:center;gap:64px;
+  padding:60px 0;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+@media(max-width:600px){.stats{gap:32px;flex-wrap:wrap}}
+.stat{text-align:center}
+.stat-value{
+  font-size:2rem;font-weight:700;
+  letter-spacing:-0.03em;
+  background:linear-gradient(135deg,var(--cyan),var(--teal));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.stat-label{
+  font-size:0.75rem;color:var(--text-dim);
+  letter-spacing:0.06em;text-transform:uppercase;
+  margin-top:4px;font-family:var(--font-mono);
+}
+
+/* ── CTA ───────────────────────────────────────────────────── */
+.cta{
+  text-align:center;padding:100px 0 120px;position:relative;
+}
+.cta::before{
+  content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:700px;height:500px;
+  background:radial-gradient(ellipse,var(--cyan-glow) 0%,transparent 70%);
+  pointer-events:none;opacity:0.3;
+}
+.cta h2{
+  font-size:clamp(1.75rem,4vw,2.75rem);font-weight:700;
+  letter-spacing:-0.025em;margin-bottom:14px;
+}
+.cta p{
+  font-size:1rem;color:var(--text-secondary);
+  margin-bottom:36px;font-weight:300;
+}
+.cta-buttons{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 28px;border-radius:8px;
+  background:var(--cyan);color:var(--bg-deep);
+  font-weight:600;font-size:0.875rem;
+  text-decoration:none;
+  transition:all 0.25s;
+  box-shadow:0 0 20px rgba(34,211,238,0.2);
+}
+.btn-primary:hover{box-shadow:0 0 30px rgba(34,211,238,0.35);transform:translateY(-1px)}
+.btn-secondary{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 28px;border-radius:8px;
+  border:1px solid var(--border-bright);
+  color:var(--text-primary);
+  font-weight:500;font-size:0.875rem;
+  text-decoration:none;
+  transition:all 0.25s;
+}
+.btn-secondary:hover{border-color:var(--cyan-dim);background:var(--bg-elevated)}
+.btn-secondary svg{width:18px;height:18px;fill:currentColor}
+
+/* ── Footer ────────────────────────────────────────────────── */
+footer{
+  border-top:1px solid var(--border);
+  padding:40px 0;
+}
+.footer-inner{
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:1140px;margin:0 auto;padding:0 24px;
+}
+@media(max-width:600px){.footer-inner{flex-direction:column;gap:16px;text-align:center}}
+.footer-left{font-size:0.8rem;color:var(--text-dim);font-family:var(--font-mono)}
+.footer-left a{color:var(--text-secondary);text-decoration:none}
+.footer-left a:hover{color:var(--cyan)}
+.footer-right{display:flex;gap:20px}
+.footer-right a{font-size:0.8rem;color:var(--text-dim);text-decoration:none;transition:color 0.2s}
+.footer-right a:hover{color:var(--text-secondary)}
+
+/* ── Animate in ────────────────────────────────────────────── */
+.fade-in{opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease}
+.fade-in.visible{opacity:1;transform:translateY(0)}
+.fade-in:nth-child(2){transition-delay:0.08s}
+.fade-in:nth-child(3){transition-delay:0.16s}
+.fade-in:nth-child(4){transition-delay:0.24s}
+.fade-in:nth-child(5){transition-delay:0.32s}
+.fade-in:nth-child(6){transition-delay:0.4s}
+
+/* ── Mobile nav ────────────────────────────────────────────── */
+@media(max-width:700px){
+  .nav-links a:not(.nav-gh){display:none}
+  .hero{padding:120px 0 60px}
+  section{padding:60px 0}
+  .stats{gap:24px;padding:40px 0}
+  .stat-value{font-size:1.5rem}
+  .install-cmd{font-size:0.72rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Navigation ──────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo"><span>ovc</span></a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#security">Security</a>
+      <a href="#quickstart">Quick Start</a>
+      <a href="https://github.com/Olib-AI/ovc" target="_blank" rel="noopener" class="nav-gh">
+        <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Hero ─────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="container" style="position:relative;z-index:1">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Open source &middot; MIT License &middot; Rust 2024 Edition
+    </div>
+    <h1>Version control<br>you <span class="gradient">fully own</span></h1>
+    <p class="hero-sub">
+      Every repository is a single encrypted file you can store on any cloud, NAS, or USB drive.
+      Ed25519 encryption, Git-compatible workflow, built-in CI/CD, and a web UI &mdash; all in one 16&nbsp;MB binary.
+    </p>
+
+    <div class="install-block">
+      <div class="install-block-header">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span style="margin-left:8px">terminal</span>
+      </div>
+      <div class="install-block-body">
+        <span class="install-cmd"><span class="dim">$</span> curl -fsSL https://raw.githubusercontent.com/Olib-AI/ovc/main/scripts/install.sh | bash</span>
+        <button class="copy-btn" onclick="copyInstall(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          copy
+        </button>
+      </div>
+    </div>
+    <p class="hero-note">
+      Or build from source &mdash; <a href="https://github.com/Olib-AI/ovc#building-from-source">instructions</a>
+    </p>
+  </div>
+
+  <div class="hero-visual" aria-hidden="true">
+    <div class="hex-grid" id="hexGrid"></div>
+  </div>
+</section>
+
+<!-- ── Stats ────────────────────────────────────────────────── -->
+<div class="stats">
+  <div class="stat"><div class="stat-value">16 MB</div><div class="stat-label">Single Binary</div></div>
+  <div class="stat"><div class="stat-value">47</div><div class="stat-label">CLI Commands</div></div>
+  <div class="stat"><div class="stat-value">26</div><div class="stat-label">Built-in CI Checks</div></div>
+  <div class="stat"><div class="stat-value">200+</div><div class="stat-label">Tests</div></div>
+  <div class="stat"><div class="stat-value">5</div><div class="stat-label">Security Audits</div></div>
+</div>
+
+<!-- ── Features ─────────────────────────────────────────────── -->
+<section id="features">
+  <div class="container">
+    <span class="section-label">Features</span>
+    <h2 class="section-title">Everything in one encrypted file</h2>
+    <p class="section-desc">
+      No server to manage. No SaaS dependency. One portable file per repository, encrypted with keys you control.
+    </p>
+
+    <div class="features-grid">
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <h3>Encrypted at rest</h3>
+        <p>XChaCha20-Poly1305 with Ed25519+X25519 key pairs. An attacker with the file sees only ciphertext.</p>
+      </div>
+
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <h3>Single portable file</h3>
+        <p>Your entire repo &mdash; code, branches, tags, history &mdash; lives in one .ovc file you can drop anywhere.</p>
+      </div>
+
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>Commit signing</h3>
+        <p>Ed25519 signatures on every commit. Verified/unverified badges in CLI and web UI. No GPG needed.</p>
+      </div>
+
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </div>
+        <h3>Built-in CI/CD</h3>
+        <p>26 built-in checks, parallel DAG execution, matrix strategy, secrets vault, Docker support. No external tools.</p>
+      </div>
+
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <h3>Git-compatible</h3>
+        <p>Bidirectional import/export with full history fidelity. Same workflow you already know.</p>
+      </div>
+
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <h3>Multi-user + RBAC</h3>
+        <p>Share via cloud storage with file locking, conflict detection, auto-merge. Per-user roles and branch protection.</p>
+      </div>
+
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9m-9 9a9 9 0 019-9"/></svg>
+        </div>
+        <h3>Cloud sync</h3>
+        <p>Content-defined chunking via FastCDC. Only changed parts transfer. Supports iCloud, GCS, NAS, and more.</p>
+      </div>
+
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <h3>Premium web UI</h3>
+        <p>Commit graph, split diff viewer, blame view, code search, command palette. Embedded in the binary.</p>
+      </div>
+
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        </div>
+        <h3>Single 16 MB binary</h3>
+        <p>VCS + crypto + git bridge + cloud sync + CI engine + web server + React UI. No runtime dependencies.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How It Works ─────────────────────────────────────────── -->
+<section id="how-it-works" style="background:var(--bg-primary)">
+  <div class="container">
+    <span class="section-label">How It Works</span>
+    <h2 class="section-title">Three commands to get started</h2>
+    <p class="section-desc">
+      Generate a key pair, create an encrypted repository, and start committing. Same workflow as Git.
+    </p>
+
+    <div class="steps">
+      <div class="step fade-in">
+        <h3>Generate your key</h3>
+        <p>One Ed25519+X25519 key pair encrypts repos and signs commits. No GPG, no separate keys.</p>
+        <code>ovc key generate --name mykey \
+  --identity "you@email.com"</code>
+      </div>
+
+      <div class="step fade-in">
+        <h3>Create a repository</h3>
+        <p>Initialize an encrypted .ovc file. Optionally store it on any cloud for automatic sync.</p>
+        <code>ovc init --name project.ovc \
+  --key mykey</code>
+      </div>
+
+      <div class="step fade-in">
+        <h3>Commit and collaborate</h3>
+        <p>Stage, commit, branch, merge &mdash; the full Git workflow you already know, fully encrypted.</p>
+        <code>ovc add .
+ovc commit -m "initial commit"
+ovc log --oneline --graph</code>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Security ─────────────────────────────────────────────── -->
+<section id="security">
+  <div class="container">
+    <span class="section-label">Security</span>
+    <h2 class="section-title">Encryption is not optional</h2>
+    <p class="section-desc">
+      Every .ovc file is encrypted by default. 27 security issues identified and fixed across 5 audit passes.
+    </p>
+
+    <div class="security-layout">
+      <div class="security-items">
+        <div class="security-item fade-in">
+          <div class="security-item-icon">01</div>
+          <div>
+            <h4>XChaCha20-Poly1305</h4>
+            <p>256-bit encryption with 192-bit nonces per segment. Authenticated encryption prevents tampering.</p>
+          </div>
+        </div>
+        <div class="security-item fade-in">
+          <div class="security-item-icon">02</div>
+          <div>
+            <h4>Ed25519 commit signing</h4>
+            <p>Every commit carries a cryptographic signature. One key pair handles both encryption and identity.</p>
+          </div>
+        </div>
+        <div class="security-item fade-in">
+          <div class="security-item-icon">03</div>
+          <div>
+            <h4>Argon2id key derivation</h4>
+            <p>Memory-hard KDF with configurable parameters. Brute-force attacks are computationally infeasible.</p>
+          </div>
+        </div>
+        <div class="security-item fade-in">
+          <div class="security-item-icon">04</div>
+          <div>
+            <h4>Zero secrets in memory</h4>
+            <p>All sensitive data zeroed on drop via Zeroizing wrappers. Constant-time authentication prevents timing attacks.</p>
+          </div>
+        </div>
+        <div class="security-item fade-in">
+          <div class="security-item-icon">05</div>
+          <div>
+            <h4>Memory-safe Rust</h4>
+            <p>unsafe_code = "forbid" workspace-wide. No buffer overflows, no use-after-free, no data races.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="security-diagram" aria-label="Encryption flow diagram">
+<span class="am">Key Pair</span> (Ed25519 + X25519)
+  |
+  |-- <span class="hl">X25519 ECDH</span> with ephemeral key
+  |        |
+  |        +-- <span class="hl">HKDF-SHA256</span>
+  |               |
+  |               +-- Sealed Key Encryption Key
+  |
+  +-- <span class="gr">Segment Encryption Key</span> (256-bit)
+          |
+          +-- <span class="gr">XChaCha20-Poly1305</span>
+                 |
+                 +-- Encrypted data
+                     (192-bit nonce per segment)
+
+<span class="am">What an attacker sees:</span>
+
+  <span class="hl">64 bytes</span>  header (magic, KDF params)
+  <span class="am">??????</span>   ciphertext (everything else)
+  <span class="hl">32 bytes</span>  trailer (HMAC, offsets)
+
+  File names, commit messages,
+  authors, branches, tags
+  -- all <span class="gr">encrypted</span>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Quick Start ──────────────────────────────────────────── -->
+<section id="quickstart" style="background:var(--bg-primary)">
+  <div class="container-narrow">
+    <span class="section-label">Quick Start</span>
+    <h2 class="section-title">Familiar commands, encrypted by default</h2>
+    <p class="section-desc">
+      If you know Git, you know OVC. Every operation works on encrypted repositories transparently.
+    </p>
+
+    <div class="quickstart-block">
+      <div class="qs-tabs">
+        <button class="qs-tab active" onclick="switchTab(this,'tab-daily')">Daily</button>
+        <button class="qs-tab" onclick="switchTab(this,'tab-branch')">Branching</button>
+        <button class="qs-tab" onclick="switchTab(this,'tab-cloud')">Cloud Sync</button>
+        <button class="qs-tab" onclick="switchTab(this,'tab-ci')">CI/CD</button>
+      </div>
+      <div class="qs-content active" id="tab-daily">
+<pre><span class="cmd">ovc</span> <span class="flag">add</span> .                          <span class="comment"># Stage all files</span>
+<span class="cmd">ovc</span> <span class="flag">commit</span> <span class="flag">-m</span> <span class="str">"add feature X"</span>     <span class="comment"># Commit (auto-signed)</span>
+<span class="cmd">ovc</span> <span class="flag">status</span>                         <span class="comment"># Working tree status</span>
+<span class="cmd">ovc</span> <span class="flag">log</span> <span class="flag">--oneline</span> <span class="flag">--graph</span>         <span class="comment"># Commit history</span>
+<span class="cmd">ovc</span> <span class="flag">diff</span> <span class="flag">--staged</span>                  <span class="comment"># View staged changes</span>
+<span class="cmd">ovc</span> <span class="flag">show</span> HEAD~2                     <span class="comment"># Inspect a commit</span></pre>
+      </div>
+      <div class="qs-content" id="tab-branch">
+<pre><span class="cmd">ovc</span> <span class="flag">branch</span> feature-x               <span class="comment"># Create branch</span>
+<span class="cmd">ovc</span> <span class="flag">checkout</span> feature-x             <span class="comment"># Switch branch</span>
+<span class="cmd">ovc</span> <span class="flag">merge</span> feature-x                <span class="comment"># Merge into current</span>
+<span class="cmd">ovc</span> <span class="flag">rebase</span> main                    <span class="comment"># Rebase onto main</span>
+<span class="cmd">ovc</span> <span class="flag">cherry-pick</span> abc123             <span class="comment"># Cherry-pick commit</span>
+<span class="cmd">ovc</span> <span class="flag">stash</span> push <span class="flag">-m</span> <span class="str">"WIP"</span>           <span class="comment"># Stash changes</span></pre>
+      </div>
+      <div class="qs-content" id="tab-cloud">
+<pre><span class="comment"># Add a remote backend</span>
+<span class="cmd">ovc</span> <span class="flag">remote add</span> origin gs://bucket/repos <span class="flag">--backend</span> gcs
+<span class="cmd">ovc</span> <span class="flag">remote add</span> nas /mnt/nas/repos <span class="flag">--backend</span> local
+
+<span class="comment"># Push/pull — only changed chunks transfer</span>
+<span class="cmd">ovc</span> <span class="flag">push</span>
+<span class="cmd">ovc</span> <span class="flag">pull</span>
+
+<span class="comment"># Or store on iCloud for auto-sync</span>
+<span class="cmd">ovc</span> <span class="flag">init</span> <span class="flag">--store</span> ~/iCloud/ovc-repos/ <span class="flag">--key</span> mykey</pre>
+      </div>
+      <div class="qs-content" id="tab-ci">
+<pre><span class="comment"># Auto-detect languages and generate config</span>
+<span class="cmd">ovc</span> <span class="flag">actions init</span>
+
+<span class="comment"># Run all pre-commit checks</span>
+<span class="cmd">ovc</span> <span class="flag">actions run</span> <span class="flag">--trigger</span> pre-commit
+
+<span class="comment"># Commit runs hooks automatically</span>
+<span class="cmd">ovc</span> <span class="flag">commit</span> <span class="flag">-m</span> <span class="str">"checked and verified"</span>
+
+<span class="comment"># 26 built-in checks: secret scan, linting,</span>
+<span class="comment"># dead code, complexity, and more</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ──────────────────────────────────────────────────── -->
+<section class="cta">
+  <div class="container" style="position:relative;z-index:1">
+    <h2>Start owning your code</h2>
+    <p>Open source. MIT licensed. One command to install.</p>
+    <div class="cta-buttons">
+      <a href="https://github.com/Olib-AI/ovc" target="_blank" rel="noopener" class="btn-primary">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        View on GitHub
+      </a>
+      <a href="#quickstart" class="btn-secondary">
+        Quick Start
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ──────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">
+      &copy; 2025 <a href="https://www.olib.ai" target="_blank" rel="noopener">Olib AI</a> &middot; MIT License
+    </div>
+    <div class="footer-right">
+      <a href="https://github.com/Olib-AI/ovc" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/Olib-AI/ovc/issues" target="_blank" rel="noopener">Issues</a>
+      <a href="https://www.olib.ai" target="_blank" rel="noopener">Olib AI</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── Copy install command ──────────────────────────────────────
+function copyInstall(btn){
+  const cmd='curl -fsSL https://raw.githubusercontent.com/Olib-AI/ovc/main/scripts/install.sh | bash';
+  navigator.clipboard.writeText(cmd).then(()=>{
+    btn.classList.add('copied');
+    btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="20 6 9 17 4 12"/></svg> copied';
+    setTimeout(()=>{
+      btn.classList.remove('copied');
+      btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> copy';
+    },2000);
+  });
+}
+
+// ── Tab switching ─────────────────────────────────────────────
+function switchTab(btn,id){
+  btn.parentElement.querySelectorAll('.qs-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  btn.closest('.quickstart-block').querySelectorAll('.qs-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── Scroll animations ─────────────────────────────────────────
+const observer=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}});
+},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.fade-in').forEach(el=>observer.observe(el));
+
+// ── Hex grid animation ────────────────────────────────────────
+(function(){
+  const chars='0123456789abcdef';
+  const el=document.getElementById('hexGrid');
+  if(!el)return;
+  let lines=[];
+  for(let i=0;i<80;i++){
+    let line='';
+    for(let j=0;j<8;j++){
+      let word='';
+      for(let k=0;k<8;k++)word+=chars[Math.floor(Math.random()*16)];
+      line+=word+' ';
+    }
+    lines.push(line);
+  }
+  // duplicate for seamless scroll
+  el.textContent=lines.join('\n')+'\n'+lines.join('\n');
+})();
+
+// ── Smooth scroll for nav links ───────────────────────────────
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const target=document.querySelector(a.getAttribute('href'));
+    if(target){e.preventDefault();target.scrollIntoView({behavior:'smooth',block:'start'})}
+  });
+});
+</script>
+</body>
+</html>

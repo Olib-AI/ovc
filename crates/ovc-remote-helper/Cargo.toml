@@ -1,0 +1,12 @@
+[package]
+name = "ovc-remote-helper"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Stub crate — will be implemented in later phases"
+
+[lints]
+workspace = true
+
+[dependencies]

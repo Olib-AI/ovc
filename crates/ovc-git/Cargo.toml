@@ -1,0 +1,23 @@
+[package]
+name = "ovc-git"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Bidirectional conversion between Git repositories and OVC repositories"
+
+[lints]
+workspace = true
+
+[dependencies]
+ovc-core = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+sha1 = { workspace = true }
+hex = { workspace = true }
+flate2 = { workspace = true }
+walkdir = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"
+serde_json = { workspace = true }
