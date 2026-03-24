@@ -88,7 +88,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: cd frontend && npm ci && npm run build
       - run: cargo build --release
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ovc-${{ matrix.os }}
           path: target/release/ovc
