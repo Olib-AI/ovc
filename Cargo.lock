@@ -1691,7 +1691,7 @@ checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
 
 [[package]]
 name = "ovc-actions"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "argon2",
  "base64",
@@ -1716,7 +1716,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-api"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "axum",
  "base64",
@@ -1752,7 +1752,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-cli"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -1783,7 +1783,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-cloud"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "async-trait",
  "bytes",
@@ -1803,7 +1803,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-core"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "argon2",
  "base64",
@@ -1830,7 +1830,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-git"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "flate2",
  "hex",
@@ -1845,7 +1845,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-remote-helper"
-version = "0.1.1"
+version = "0.1.2"
 
 [[package]]
 name = "p256"
