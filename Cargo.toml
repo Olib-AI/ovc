@@ -89,7 +89,7 @@ globset = "0.4"
 
 # Archive formats
 tar = "0.4"
-zip = { version = "2", default-features = false, features = ["deflate"] }
+zip = { version = "8", default-features = false, features = ["deflate"] }
 
 # Internal crates
 ovc-core = { path = "crates/ovc-core" }
