@@ -16,6 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: docker/setup-qemu-action@v3
+
       - uses: docker/setup-buildx-action@v3
 
       - uses: docker/login-action@v3
@@ -27,6 +29,7 @@ jobs:
       - uses: docker/build-push-action@v5
         with:
           context: docker/ovc-actions
+          platforms: linux/amd64,linux/arm64
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: |
             ghcr.io/olib-ai/ovc-actions:latest
