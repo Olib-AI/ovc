@@ -334,6 +334,11 @@ pub enum BuiltinAction {
     HardcodedIp,
     NonAsciiCheck,
     EofNewline,
+    /// Detects supply chain attack patterns: env access, system file reads,
+    /// process execution, network calls, and filesystem manipulation.
+    SupplyChainScan,
+    /// Scans installed dependency packages for obfuscated malicious code patterns.
+    PackageScan,
     /// Queries public registries for outdated dependencies (like Dependabot).
     DependencyUpdateCheck,
 }
@@ -367,6 +372,8 @@ impl std::fmt::Display for BuiltinAction {
             Self::HardcodedIp => write!(f, "hardcoded_ip"),
             Self::NonAsciiCheck => write!(f, "non_ascii_check"),
             Self::EofNewline => write!(f, "eof_newline"),
+            Self::SupplyChainScan => write!(f, "supply_chain_scan"),
+            Self::PackageScan => write!(f, "package_scan"),
             Self::DependencyUpdateCheck => write!(f, "dependency_update_check"),
         }
     }

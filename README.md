@@ -6,7 +6,7 @@
   <strong>Secure, self-hosted version control — encrypted single-file repositories you can store anywhere.</strong>
 </p>
 <p align="center">
-  Every commit, branch, tag, and file history lives in a single encrypted <code>.ovc</code> blob — Ed25519+X25519 key pair encryption, commit signing & verification, full Git interop, cloud sync via any storage provider, a built-in CI/CD actions engine with 26 built-in checks, and a premium web UI — all in a <strong>single 16 MB binary</strong>.
+  Every commit, branch, tag, and file history lives in a single encrypted <code>.ovc</code> blob — Ed25519+X25519 key pair encryption, commit signing & verification, full Git interop, cloud sync via any storage provider, a built-in CI/CD actions engine with 28 built-in checks, and a premium web UI — all in a <strong>single 16 MB binary</strong>.
 </p>
 <p align="center">
   Built by <a href="https://www.olib.ai">Olib AI</a>
@@ -35,7 +35,7 @@ Modern teams need version control they fully own — without giving up the conve
 - **Multi-user collaboration** — share the `.ovc` file via any cloud storage; cross-process locking, conflict detection, write-ahead log, and auto-merge keep everyone's work safe
 - **Cloud sync** — content-defined chunking via FastCDC; only changed parts transfer; supports local, GCS, and extensible backends
 - **Git-compatible** — bidirectional import/export with full history fidelity
-- **Built-in Actions Engine** — 26 built-in checks + custom shell commands, parallel execution with DAG dependencies, matrix strategy, secrets vault, retry logic
+- **Built-in Actions Engine** — 28 built-in checks + custom shell commands, parallel execution with DAG dependencies, matrix strategy, secrets vault, retry logic
 - **Premium web UI** — commit graph with SVG lanes, split diff viewer, blame view, code search, command palette, commit actions, toast notifications
 - **Single binary** — VCS + crypto + git bridge + cloud sync + actions engine + web server + React UI
 - **Access control (RBAC)** — per-user roles (read, write, admin, owner) with branch protection
@@ -384,7 +384,7 @@ Features: commit graph with SVG lanes, split/unified diff viewer, blame view, co
 
 ## Actions Engine
 
-Built-in CI/CD with 26 checks that require no external tools, plus support for any shell command:
+Built-in CI/CD with 27 checks that require no external tools, plus support for any shell command:
 
 ```bash
 ovc actions init              # Auto-detect languages, generate config
@@ -398,6 +398,8 @@ ovc commit --no-verify -m "skip"      # Bypass hooks
 | Action | What it checks |
 |--------|---------------|
 | `secret_scan` | AWS keys, GitHub tokens, private keys, API keys |
+| `supply_chain_scan` | ENV access, system file reads, process execution, network calls |
+| `package_scan` | Obfuscated code, encoded payloads, suspicious network calls in dependencies |
 | `trailing_whitespace` | Trailing spaces/tabs |
 | `line_endings` | Consistent LF or CRLF |
 | `file_size` | Files exceeding max size |
@@ -566,7 +568,7 @@ crates/
   ovc-git/        Git interoperability — bidirectional import/export
   ovc-cloud/      Cloud sync — FastCDC chunking, storage backends (local, GCS)
   ovc-api/        REST API server — Axum-based, embedded React UI
-  ovc-actions/    Actions/CI engine — 26 built-in checks, DAG scheduler, Docker
+  ovc-actions/    Actions/CI engine — 28 built-in checks, DAG scheduler, Docker
   ovc-cli/        CLI — 47 commands, Clap-based
   ovc-remote-helper/  Git remote helper (stub for future git clone ovc:// support)
 

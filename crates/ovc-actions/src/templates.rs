@@ -45,6 +45,7 @@ pub fn generate_template(languages: &[DetectedLanguage]) -> ActionsConfig {
 
 fn add_builtin_actions(config: &mut ActionsConfig) {
     add_pre_commit_builtins(config);
+    add_security_builtins(config);
     add_audit_builtins(config);
 }
 
@@ -145,6 +146,29 @@ fn add_pre_commit_builtins(config: &mut ActionsConfig) {
             category: ActionCategory::Lint,
             display_name: Some("Mixed Indentation".to_owned()),
             builtin: Some(BuiltinAction::MixedIndentation),
+            trigger: Trigger::PreCommit,
+            ..default_def()
+        },
+    );
+}
+
+fn add_security_builtins(config: &mut ActionsConfig) {
+    config.actions.insert(
+        "supply-chain-scan".to_owned(),
+        ActionDefinition {
+            category: ActionCategory::Security,
+            display_name: Some("Supply Chain Scan".to_owned()),
+            builtin: Some(BuiltinAction::SupplyChainScan),
+            trigger: Trigger::PreCommit,
+            ..default_def()
+        },
+    );
+    config.actions.insert(
+        "package-scan".to_owned(),
+        ActionDefinition {
+            category: ActionCategory::Security,
+            display_name: Some("Package Scan".to_owned()),
+            builtin: Some(BuiltinAction::PackageScan),
             trigger: Trigger::PreCommit,
             ..default_def()
         },

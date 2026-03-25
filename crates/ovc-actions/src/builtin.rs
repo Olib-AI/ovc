@@ -55,6 +55,8 @@ pub fn run_builtin(
         BuiltinAction::HardcodedIp => run_hardcoded_ip(repo_root, changed_paths, config)?,
         BuiltinAction::NonAsciiCheck => run_non_ascii_check(repo_root, changed_paths, config)?,
         BuiltinAction::EofNewline => run_eof_newline(repo_root, changed_paths, config),
+        BuiltinAction::SupplyChainScan => run_supply_chain_scan(repo_root, changed_paths, config)?,
+        BuiltinAction::PackageScan => run_package_scan(repo_root, config)?,
         // DependencyUpdateCheck makes async HTTP requests.
         // Spawn a dedicated runtime so it works regardless of caller context
         // (single-threaded CLI runtime or multi-threaded API server).
@@ -106,7 +108,7 @@ fn files_to_scan(repo_root: &Path, changed_paths: &[String]) -> Vec<std::path::P
             .into_iter()
             .filter_entry(|e| {
                 let name = e.file_name().to_string_lossy();
-                !(name.starts_with('.')
+                !(name == ".git"
                     || name == "node_modules"
                     || name == "target"
                     || name == "vendor"
@@ -1861,5 +1863,1668 @@ fn run_eof_newline(
             out.push('\n');
         }
         (ActionStatus::Failed, out)
+    }
+}
+
+// ---------- Supply Chain Scan ----------
+
+/// File names (without extension) that are always scanned regardless of extension.
+const SUPPLY_CHAIN_SCAN_NAMES: &[&str] = &[
+    "Makefile",
+    "Dockerfile",
+    "Jenkinsfile",
+    "Vagrantfile",
+    "Gemfile",
+    "Rakefile",
+    "package.json",
+    "setup.py",
+    "setup.cfg",
+    "pyproject.toml",
+    "build.rs",
+    "build.gradle",
+    "package-lock.json",
+    "yarn.lock",
+    "Cargo.lock",
+    "poetry.lock",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "lerna.json",
+    ".cargo/config",
+    ".cargo/config.toml",
+    "settings.gradle",
+    "pom.xml",
+];
+
+/// Returns `true` if the path should be scanned by the supply chain scanner.
+fn is_supply_chain_scannable(path: &Path, extensions: &[&str]) -> bool {
+    if has_extension(path, extensions) {
+        return true;
+    }
+    // Check well-known filenames that may lack a matching extension.
+    let file_name = path
+        .file_name()
+        .and_then(std::ffi::OsStr::to_str)
+        .unwrap_or("");
+    SUPPLY_CHAIN_SCAN_NAMES.contains(&file_name)
+}
+
+fn run_supply_chain_scan(
+    repo_root: &Path,
+    changed_paths: &[String],
+    config: &serde_yaml::Value,
+) -> ActionsResult<(ActionStatus, String)> {
+    let severity = config
+        .get("severity")
+        .and_then(serde_yaml::Value::as_str)
+        .unwrap_or("flag");
+
+    let enabled_categories: HashSet<&str> = config
+        .get("categories")
+        .and_then(serde_yaml::Value::as_sequence)
+        .map_or_else(
+            || {
+                [
+                    "env_access",
+                    "system_file",
+                    "network",
+                    "process_exec",
+                    "fs_manipulation",
+                    "conditional_exec",
+                    "lockfile_tampering",
+                    "unicode_attacks",
+                    "persistence",
+                ]
+                .into_iter()
+                .collect()
+            },
+            |seq| seq.iter().filter_map(serde_yaml::Value::as_str).collect(),
+        );
+
+    let allowed_patterns: Vec<Regex> = config
+        .get("allowed_patterns")
+        .and_then(serde_yaml::Value::as_sequence)
+        .map_or_else(Vec::new, |seq| {
+            seq.iter()
+                .filter_map(serde_yaml::Value::as_str)
+                .filter_map(|s| Regex::new(s).ok())
+                .collect()
+        });
+
+    let extensions = extensions_from_config(
+        config,
+        &[
+            "rs", "py", "js", "ts", "jsx", "tsx", "go", "rb", "java", "kt", "c", "cpp", "h", "hpp",
+            "cs", "swift", "ex", "exs", "php", "sh", "bash", "zsh", "ps1", "bat", "cmd", "yml",
+            "yaml", "toml", "json", "xml", "gradle", "mk", "cmake",
+        ],
+    );
+
+    let category_patterns = build_supply_chain_patterns(&enabled_categories)?;
+    let files = files_to_scan(repo_root, changed_paths);
+    let mut findings = Vec::new();
+
+    for path in &files {
+        if !is_supply_chain_scannable(path, &extensions) {
+            continue;
+        }
+        let Some(content) = read_if_text(path) else {
+            continue;
+        };
+        let rel = path.strip_prefix(repo_root).unwrap_or(path);
+        scan_file_for_supply_chain_patterns(
+            rel,
+            &content,
+            &category_patterns,
+            &allowed_patterns,
+            &mut findings,
+        );
+    }
+
+    Ok(format_supply_chain_results(&findings, severity))
+}
+
+/// Scan a single file's content against all category patterns, appending hits
+/// to `findings`.
+fn scan_file_for_supply_chain_patterns(
+    rel: &Path,
+    content: &str,
+    category_patterns: &[CategoryPatterns<'_>],
+    allowed_patterns: &[Regex],
+    findings: &mut Vec<String>,
+) {
+    let lines: Vec<&str> = content.lines().collect();
+    let mut seen = HashSet::new();
+
+    // Pass 1: per-line matching
+    for (line_num, line) in lines.iter().enumerate() {
+        if line.contains("ovc:ignore") {
+            continue;
+        }
+        for (category, patterns) in category_patterns {
+            for (label, re) in patterns {
+                if re.is_match(line) && !allowed_patterns.iter().any(|ap| ap.is_match(line)) {
+                    let finding = format!(
+                        "  {}:{}: [{}] {}",
+                        rel.display(),
+                        line_num + 1,
+                        category,
+                        label,
+                    );
+                    if seen.insert(finding.clone()) {
+                        findings.push(finding);
+                    }
+                }
+            }
+        }
+        check_high_entropy_strings(line, rel, line_num, findings, &mut seen);
+    }
+
+    // Pass 2: sliding 3-line window for cross-line pattern detection
+    if lines.len() >= 2 {
+        for i in 0..lines.len().saturating_sub(2) {
+            let end = (i + 3).min(lines.len());
+            let window: String = lines[i..end].join(" ");
+            if window.contains("ovc:ignore") {
+                continue;
+            }
+            for (category, patterns) in category_patterns {
+                for (label, re) in patterns {
+                    if re.is_match(&window)
+                        && !allowed_patterns.iter().any(|ap| ap.is_match(&window))
+                    {
+                        let finding = format!(
+                            "  {}:{}~{}: [{}] {} (multi-line)",
+                            rel.display(),
+                            i + 1,
+                            end,
+                            category,
+                            label,
+                        );
+                        if seen.insert(finding.clone()) {
+                            findings.push(finding);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Format the final scan output and determine pass/fail status.
+fn format_supply_chain_results(findings: &[String], severity: &str) -> (ActionStatus, String) {
+    if findings.is_empty() {
+        return (
+            ActionStatus::Passed,
+            "No supply chain risk patterns detected.".to_owned(),
+        );
+    }
+    let mut out = format!("Found {} supply chain risk pattern(s):\n", findings.len());
+    for f in findings.iter().take(200) {
+        out.push_str(f);
+        out.push('\n');
+    }
+    if findings.len() > 200 {
+        let _ = writeln!(out, "  ... and {} more", findings.len() - 200);
+    }
+    let status = if severity == "warn" {
+        ActionStatus::Passed
+    } else {
+        ActionStatus::Failed
+    };
+    (status, out)
+}
+
+/// A named pattern: human-readable label paired with compiled regex.
+type NamedPattern<'a> = (&'a str, Regex);
+
+/// A category of patterns: category label paired with its pattern list.
+type CategoryPatterns<'a> = (&'a str, Vec<NamedPattern<'a>>);
+
+/// Build all enabled category pattern sets for the supply chain scanner.
+fn build_supply_chain_patterns<'a>(
+    enabled: &HashSet<&str>,
+) -> ActionsResult<Vec<CategoryPatterns<'a>>> {
+    let mut out = Vec::new();
+    if enabled.contains("env_access") {
+        out.push(("env_access", build_env_access_patterns()?));
+    }
+    if enabled.contains("system_file") {
+        out.push(("system_file", build_system_file_patterns()?));
+    }
+    if enabled.contains("network") {
+        out.push(("network", build_network_patterns()?));
+    }
+    if enabled.contains("process_exec") {
+        out.push(("process_exec", build_process_exec_patterns()?));
+    }
+    if enabled.contains("fs_manipulation") {
+        out.push(("fs_manipulation", build_fs_manipulation_patterns()?));
+    }
+    if enabled.contains("conditional_exec") {
+        out.push(("conditional_exec", build_conditional_exec_patterns()?));
+    }
+    if enabled.contains("lockfile_tampering") {
+        out.push(("lockfile_tampering", build_lockfile_tampering_patterns()?));
+    }
+    if enabled.contains("unicode_attacks") {
+        out.push(("unicode_attacks", build_unicode_attack_patterns()?));
+    }
+    if enabled.contains("persistence") {
+        out.push(("persistence", build_persistence_patterns()?));
+    }
+    Ok(out)
+}
+
+fn build_env_access_patterns<'a>() -> ActionsResult<Vec<NamedPattern<'a>>> {
+    compile_supply_chain_patterns(&[
+        ("std::env::var usage", r"std::env::var[s]?\b"),
+        ("env::var usage", r"\benv::var[s]?\b"),
+        ("env! macro", r"\benv!\("),
+        ("os.environ usage", r"\bos\.environ\b"),
+        ("os.getenv usage", r"\bos\.getenv\b"),
+        ("os.putenv usage", r"\bos\.putenv\b"),
+        ("process.env usage", r"\bprocess\.env\b"),
+        ("os.Getenv usage", r"\bos\.Getenv\b"),
+        ("os.LookupEnv usage", r"\bos\.LookupEnv\b"),
+        ("os.Setenv usage", r"\bos\.Setenv\b"),
+        ("os.Environ usage", r"\bos\.Environ\(\)"),
+        ("ENV[] usage", r"\bENV\["),
+        ("ENV.fetch usage", r"\bENV\.fetch\b"),
+        ("System.getenv usage", r"\bSystem\.getenv\b"),
+        ("System.getProperty usage", r"\bSystem\.getProperty\b"),
+        ("getenv() usage", r"\bgetenv\("),
+        ("setenv() usage", r"\bsetenv\("),
+        ("putenv() usage", r"\bputenv\("),
+        ("printenv usage", r"\bprintenv\b"),
+        ("$_ENV usage", r"\$_ENV\["),
+        ("$_SERVER usage", r"\$_SERVER\["),
+        (
+            "Environment.GetEnvironmentVariable usage",
+            r"\bEnvironment\.GetEnvironmentVariable\b",
+        ),
+        (
+            "Environment.SetEnvironmentVariable usage",
+            r"\bEnvironment\.SetEnvironmentVariable\b",
+        ),
+        (
+            "ProcessInfo.processInfo.environment usage",
+            r"\bProcessInfo\.processInfo\.environment\b",
+        ),
+        ("System.get_env usage", r"\bSystem\.get_env\b"),
+    ])
+}
+
+fn build_system_file_patterns<'a>() -> ActionsResult<Vec<NamedPattern<'a>>> {
+    compile_supply_chain_patterns(&[
+        ("/etc/passwd reference", r"/etc/passwd\b"),
+        ("/etc/shadow reference", r"/etc/shadow\b"),
+        ("/etc/hosts reference", r"/etc/hosts\b"),
+        ("/etc/sudoers reference", r"/etc/sudoers\b"),
+        ("/etc/ssh/ reference", r"/etc/ssh/"),
+        ("/etc/crontab reference", r"/etc/crontab\b"),
+        ("/etc/cron.d/ reference", r"/etc/cron\.d/"),
+        ("/var/spool/cron/ reference", r"/var/spool/cron/"),
+        ("/proc/ filesystem access", r"/proc/"),
+        ("/sys/ filesystem access", r"/sys/"),
+        ("~/.ssh/ reference", r"~/\.ssh/"),
+        ("$HOME/.ssh/ reference", r"\$HOME/\.ssh/"),
+        ("~/.bashrc reference", r"~/\.bashrc\b"),
+        ("~/.zshrc reference", r"~/\.zshrc\b"),
+        ("~/.profile reference", r"~/\.profile\b"),
+        ("~/.bash_profile reference", r"~/\.bash_profile\b"),
+        ("~/.config/ reference", r"~/\.config/"),
+        ("~/.local/ reference", r"~/\.local/"),
+        ("%APPDATA% reference", r"%APPDATA%"),
+        ("%USERPROFILE% reference", r"%USERPROFILE%"),
+        ("Windows registry HKEY_ reference", r"\bHKEY_"),
+        ("Windows registry HKLM reference", r"\bHKLM\\"),
+        ("Windows registry HKCU reference", r"\bHKCU\\"),
+        (
+            "C:\\Windows\\System32 reference",
+            r"(?i)C:\\Windows\\System32",
+        ),
+        ("C:\\Users\\ reference", r"(?i)C:\\Users\\"),
+        ("~/.aws/credentials reference", r"\.aws/credentials\b"),
+        (
+            "~/.docker/config.json reference",
+            r"\.docker/config\.json\b",
+        ),
+        ("~/.kube/config reference (Kubernetes)", r"\.kube/config\b"),
+        (
+            "GCP application_default_credentials.json",
+            r"application_default_credentials\.json\b",
+        ),
+        (
+            "Terraform state file (plaintext secrets)",
+            r"terraform\.tfstate\b",
+        ),
+        (
+            "Chrome Login Data credential store",
+            r"(?i)(?:Chrome|Chromium)[/\\].*Login\s*Data",
+        ),
+        (
+            "Firefox credential store",
+            r"(?i)(?:Firefox|Mozilla)[/\\].*(?:logins\.json|key4\.db)",
+        ),
+        (
+            ".env file reference",
+            r"\.env(?:\.local|\.production|\.staging)?\b",
+        ),
+    ])
+}
+
+fn build_network_patterns<'a>() -> ActionsResult<Vec<NamedPattern<'a>>> {
+    compile_supply_chain_patterns(&[
+        ("socket.connect usage", r"\bsocket\.connect\b"),
+        ("net.Dial usage", r"\bnet\.Dial\b"),
+        ("TcpStream::connect usage", r"\bTcpStream::connect\b"),
+        ("new Socket( usage", r"\bnew\s+Socket\("),
+        ("curl invocation", r"\bcurl\s"),
+        ("wget invocation", r"\bwget\s"),
+        ("fetch() usage", r"\bfetch\("),
+        ("http.get usage", r"\bhttp\.get\b"),
+        ("requests.post usage", r"\brequests\.post\b"),
+        ("urllib usage", r"\burllib\b"),
+        ("httpx usage", r"\bhttpx\b"),
+        ("dns.resolve usage", r"\bdns\.resolve\b"),
+        ("getaddrinfo usage", r"\bgetaddrinfo\b"),
+        ("nslookup invocation", r"\bnslookup\b"),
+        ("dig invocation", r"\bdig\s"),
+        ("bash -i (reverse shell)", r"\bbash\s+-i\b"),
+        ("/dev/tcp/ reference", r"/dev/tcp/"),
+        ("nc -e (reverse shell)", r"\bnc\s+-e\b"),
+        ("ncat invocation", r"\bncat\b"),
+        ("mkfifo usage", r"\bmkfifo\b"),
+        (
+            "ethers.js blockchain provider/contract (C2 channel)",
+            r"\bnew\s+ethers\.(?:JsonRpcProvider|WebSocketProvider|Contract)\b",
+        ),
+        (
+            "web3.js Contract call (blockchain C2)",
+            r"\bnew\s+Web3\b|\bnew\s+web3\.eth\.Contract\b",
+        ),
+        (
+            "IPFS gateway fetch",
+            r"https?://(?:ipfs\.io|cloudflare-ipfs\.com|gateway\.pinata\.cloud|dweb\.link)/ipfs/",
+        ),
+        (
+            "IPFS CID string literal",
+            r"['\x22`](?:Qm[1-9A-HJ-NP-Za-km-z]{44}|bafy[a-z2-7]{55})['\x22`]",
+        ),
+        (
+            "Infura RPC endpoint (blockchain node)",
+            r"https?://[a-z-]+\.infura\.io/",
+        ),
+        (
+            "Alchemy RPC endpoint (blockchain node)",
+            r"https?://[a-z-]+-mainnet\.g\.alchemy\.com/",
+        ),
+        (
+            "Rust reqwest HTTP call (build-time exfil)",
+            r"\breqwest::(?:blocking::)?(?:get|post|Client)\b",
+        ),
+        (
+            "Rust ureq HTTP call (build-time exfil)",
+            r"\bureq::(?:get|post|agent)\b",
+        ),
+        (
+            "Go linkname directive (symbol hijacking)",
+            r"//go:linkname\s+\w+\s+\w+",
+        ),
+        ("Go unsafe.Pointer cast", r"\bunsafe\.Pointer\s*\("),
+        (
+            "Rust include_bytes/include_str from URL context",
+            r"\binclude_(?:bytes|str)!\s*\(",
+        ),
+    ])
+}
+
+fn build_process_exec_patterns<'a>() -> ActionsResult<Vec<NamedPattern<'a>>> {
+    compile_supply_chain_patterns(&[
+        ("Command::new usage", r"\bCommand::new\b"),
+        ("std::process::Command usage", r"\bstd::process::Command\b"),
+        ("subprocess usage", r"\bsubprocess\."),
+        ("os.system() usage", r"\bos\.system\("),
+        ("os.popen() usage", r"\bos\.popen\("),
+        ("os.exec usage", r"\bos\.exec"),
+        ("child_process usage", r"\bchild_process\b"),
+        ("exec() usage", r"\bexec\("),
+        ("spawn() usage", r"\bspawn\("),
+        ("execSync usage", r"\bexecSync\b"),
+        ("exec.Command usage", r"\bexec\.Command\b"),
+        ("system() usage", r"\bsystem\("),
+        ("IO.popen usage", r"\bIO\.popen\b"),
+        ("Open3 usage", r"\bOpen3\b"),
+        ("Runtime.exec usage", r"\bRuntime\.exec\b"),
+        ("ProcessBuilder usage", r"\bProcessBuilder\b"),
+        ("shell_exec() usage", r"\bshell_exec\("),
+        ("passthru() usage", r"\bpassthru\("),
+        ("popen() usage", r"\bpopen\("),
+        ("Process.Start usage", r"\bProcess\.Start\b"),
+        ("eval usage", r"\beval\s"),
+        ("source usage", r"\bsource\s"),
+    ])
+}
+
+fn build_fs_manipulation_patterns<'a>() -> ActionsResult<Vec<NamedPattern<'a>>> {
+    compile_supply_chain_patterns(&[
+        ("npm preinstall script", r#""preinstall"\s*:"#),
+        ("npm postinstall script", r#""postinstall"\s*:"#),
+        ("npm install script", r#""install"\s*:"#),
+        ("setup.py cmdclass", r"\bcmdclass\b"),
+        ("install_requires with URL", r"install_requires.*https?://"),
+        ("curl pipe to shell", r"\bcurl\b.*\|\s*(?:sh|bash)\b"),
+        ("wget pipe to shell", r"\bwget\b.*\|\s*(?:sh|bash)\b"),
+        (
+            "Write to .github/workflows/ directory",
+            r"(?:writeFile|writeFileSync|open\s*\([^,]+['\x22]w)\s*.*\.github[/\\]workflows",
+        ),
+        (
+            "GitHub Actions expression injection",
+            r"\$\{\{\s*github\.(?:event\.(?:issue|pull_request|comment|review)\.body|head_ref)\s*\}\}",
+        ),
+        (
+            "GitHub Actions branch-ref (not SHA-pinned)",
+            r"uses:\s*[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+@[a-zA-Z][a-zA-Z0-9._-]*$",
+        ),
+        (
+            "Self-hosted runner registration token",
+            r"(?:config\.(?:sh|cmd)|actions-runner).*--token",
+        ),
+    ])
+}
+
+fn build_lockfile_tampering_patterns<'a>() -> ActionsResult<Vec<NamedPattern<'a>>> {
+    compile_supply_chain_patterns(&[
+        (
+            "yarn.lock resolved to non-standard registry",
+            r#"resolved\s+"https?://[^\s"]+"#,
+        ),
+        (
+            "package-lock resolved to non-standard registry",
+            r#""resolved"\s*:\s*"https?://[^\s"]+"#,
+        ),
+        (
+            "Cargo.lock source pointing to non-crates.io registry",
+            r#"source\s*=\s*"registry\+https://[^\s"]+"#,
+        ),
+        (
+            "poetry.lock source with non-standard URL",
+            r#"url\s*=\s*"https?://[^\s"]+"#,
+        ),
+        (
+            "integrity hash empty or removed in lockfile",
+            r#""integrity"\s*:\s*"""#,
+        ),
+        (
+            "Git dependency with SSH URL in lockfile",
+            r#"(?:resolved|source)\s*[=:]\s*"?git\+ssh://"#,
+        ),
+        (
+            "Cargo.toml [patch] section overriding crates.io",
+            r"\[patch\.crates-io\]",
+        ),
+        (
+            "npm workspaces with path traversal",
+            r#""workspaces"\s*:\s*\[[^\]]*"\.\."#,
+        ),
+        (
+            "pip extra-index-url (dependency confusion)",
+            r"extra[-_]index[-_]url\s*=\s*https?://",
+        ),
+        ("pnpm workspace with path traversal", r"packages:.*\.\."),
+        (
+            "lerna packages with path traversal",
+            r#""packages"\s*:\s*\[[^\]]*"\.\."#,
+        ),
+        (
+            "npm config registry override",
+            r#""config"\s*:\s*\{[^}]*"registry"\s*:"#,
+        ),
+        ("Cargo source replacement in config", r"\[source\.[^\]]+\]"),
+        (
+            "Gradle non-standard Maven repository",
+            r"maven\s*\{[^}]*url\s+['\x22]https?://",
+        ),
+        (
+            "Maven non-central repository URL",
+            r"<repository>.*<url>https?://",
+        ),
+        ("pip index-url override", r"index[-_]url\s*=\s*https?://"),
+    ])
+}
+
+/// Compile a slice of `(label, pattern)` pairs into `(label, Regex)`.
+fn compile_supply_chain_patterns<'a>(
+    pairs: &[(&'a str, &str)],
+) -> ActionsResult<Vec<NamedPattern<'a>>> {
+    pairs
+        .iter()
+        .map(|(label, pat)| {
+            Regex::new(pat)
+                .map(|re| (*label, re))
+                .map_err(|e| ActionsError::BuiltinError {
+                    reason: format!("supply_chain_scan regex error for '{label}': {e}"),
+                })
+        })
+        .collect()
+}
+
+// ---------- Package Scan ----------
+
+/// Well-known dependency directories to scan for compromised packages.
+const PACKAGE_DIRS: &[&str] = &[
+    "node_modules",
+    "vendor",
+    ".vendor",
+    "bower_components",
+    "jspm_packages",
+    "web_modules",
+];
+
+/// Virtual environment directories that may contain `site-packages`.
+const VENV_DIRS: &[&str] = &[".venv", "venv", "env"];
+
+/// File extensions relevant to package scanning.
+const PKG_SCAN_EXTENSIONS: &[&str] = &[
+    "js", "mjs", "cjs", "ts", "py", "rb", "php", "sh", "bash", "pl", "lua", "ps1", "bat", "cmd",
+    "json", "gyp", "gemspec", "wasm",
+];
+
+/// Default maximum walk depth inside dependency directories.
+const PKG_SCAN_DEFAULT_DEPTH: u64 = 8;
+
+/// Default maximum file size in bytes (512 KB).
+const PKG_SCAN_DEFAULT_FILE_SIZE: u64 = 524_288;
+
+/// Default maximum number of files to scan.
+const PKG_SCAN_DEFAULT_MAX_FILES: u64 = 10_000;
+
+/// Maximum number of findings to include in output before truncation.
+const PKG_SCAN_MAX_FINDINGS_DISPLAY: usize = 300;
+
+/// A named pattern for package scanning: human-readable label paired with compiled regex.
+type PkgNamedPattern<'a> = (&'a str, Regex);
+
+/// A category of patterns for package scanning: category label paired with its pattern list.
+type PkgCategoryPatterns<'a> = (&'a str, Vec<PkgNamedPattern<'a>>);
+
+fn run_package_scan(
+    repo_root: &Path,
+    config: &serde_yaml::Value,
+) -> ActionsResult<(ActionStatus, String)> {
+    let severity = config
+        .get("severity")
+        .and_then(serde_yaml::Value::as_str)
+        .unwrap_or("flag");
+
+    let max_depth = config
+        .get("max_depth")
+        .and_then(serde_yaml::Value::as_u64)
+        .unwrap_or(PKG_SCAN_DEFAULT_DEPTH);
+
+    let max_file_size = config
+        .get("max_file_size")
+        .and_then(serde_yaml::Value::as_u64)
+        .unwrap_or(PKG_SCAN_DEFAULT_FILE_SIZE);
+
+    let max_files = config
+        .get("max_files")
+        .and_then(serde_yaml::Value::as_u64)
+        .unwrap_or(PKG_SCAN_DEFAULT_MAX_FILES);
+
+    let enabled_categories: HashSet<&str> = config
+        .get("categories")
+        .and_then(serde_yaml::Value::as_sequence)
+        .map_or_else(
+            || {
+                [
+                    "obfuscation",
+                    "dynamic_exec",
+                    "suspicious_network",
+                    "fs_tampering",
+                    "install_hooks",
+                    "exfiltration",
+                    "conditional_exec",
+                    "unicode_attacks",
+                    "steganography",
+                    "persistence",
+                ]
+                .into_iter()
+                .collect()
+            },
+            |seq| seq.iter().filter_map(serde_yaml::Value::as_str).collect(),
+        );
+
+    let extra_dirs: Vec<&str> = config
+        .get("scan_dirs")
+        .and_then(serde_yaml::Value::as_sequence)
+        .map_or_else(Vec::new, |seq| {
+            seq.iter().filter_map(serde_yaml::Value::as_str).collect()
+        });
+
+    let allowed_packages: Vec<&str> = config
+        .get("allowed_packages")
+        .and_then(serde_yaml::Value::as_sequence)
+        .map_or_else(Vec::new, |seq| {
+            seq.iter().filter_map(serde_yaml::Value::as_str).collect()
+        });
+
+    let category_patterns = build_package_scan_patterns(&enabled_categories)?;
+    let files = collect_package_files(repo_root, max_depth, max_file_size, max_files, &extra_dirs);
+    let mut findings = Vec::new();
+
+    for path in &files {
+        if is_allowed_package(path, repo_root, &allowed_packages) {
+            continue;
+        }
+        let rel = path.strip_prefix(repo_root).unwrap_or(path);
+        if let Some(content) = read_if_text(path) {
+            scan_package_file(rel, &content, &category_patterns, &mut findings);
+        } else if has_extension(path, &["wasm", "node"]) {
+            // Binary file scanning for WASM and native addons
+            if let Ok(data) = std::fs::read(path) {
+                let max_binary_size = 2_097_152; // 2 MB cap for binary scanning
+                if data.len() <= max_binary_size {
+                    scan_binary_strings(rel, &data, &mut findings);
+                }
+            }
+        }
+    }
+
+    Ok(format_package_scan_results(&findings, severity))
+}
+
+/// Check whether a file belongs to an allowed (skipped) package.
+fn is_allowed_package(path: &Path, repo_root: &Path, allowed: &[&str]) -> bool {
+    if allowed.is_empty() {
+        return false;
+    }
+    let rel = path.strip_prefix(repo_root).unwrap_or(path);
+    let components: Vec<_> = rel.components().collect();
+
+    // Find the index of the first dependency-directory component.
+    let Some(pkg_dir_idx) = components
+        .iter()
+        .position(|c| PACKAGE_DIRS.contains(&c.as_os_str().to_string_lossy().as_ref()))
+    else {
+        return false;
+    };
+
+    // The package name immediately follows the dependency dir.
+    // Skip @scope prefix if present.
+    let mut name_idx = pkg_dir_idx + 1;
+    if let Some(c) = components.get(name_idx)
+        && c.as_os_str().to_string_lossy().starts_with('@')
+    {
+        name_idx += 1;
+    }
+    let Some(pkg_component) = components.get(name_idx) else {
+        return false;
+    };
+
+    // Check if there is a NESTED dependency directory after the package name.
+    // If so, this file belongs to a transitive dependency — do NOT allow.
+    for component in &components[name_idx + 1..] {
+        if PACKAGE_DIRS.contains(&component.as_os_str().to_string_lossy().as_ref()) {
+            return false;
+        }
+    }
+
+    let pkg_name = pkg_component.as_os_str().to_string_lossy();
+    allowed.iter().any(|pattern| {
+        pattern.strip_suffix('*').map_or_else(
+            || *pkg_name == **pattern,
+            |prefix| pkg_name.starts_with(prefix),
+        )
+    })
+}
+
+/// Collect files from well-known dependency directories for scanning.
+fn collect_package_files(
+    repo_root: &Path,
+    max_depth: u64,
+    max_file_size: u64,
+    max_files: u64,
+    extra_dirs: &[&str],
+) -> Vec<std::path::PathBuf> {
+    let mut files = Vec::new();
+    let max_files = usize::try_from(max_files).unwrap_or(usize::MAX);
+    let max_depth = usize::try_from(max_depth).unwrap_or(usize::MAX);
+
+    // Collect candidate root directories to walk.
+    let mut roots: Vec<std::path::PathBuf> = Vec::new();
+
+    // Well-known dependency directories directly under repo root.
+    for dir_name in PACKAGE_DIRS {
+        let candidate = repo_root.join(dir_name);
+        if candidate.is_dir() {
+            roots.push(candidate);
+        }
+    }
+
+    // Virtual environment directories.
+    for venv in VENV_DIRS {
+        let candidate = repo_root.join(venv);
+        if candidate.is_dir() {
+            roots.push(candidate);
+        }
+    }
+
+    // User-specified additional directories.
+    for extra in extra_dirs {
+        let candidate = repo_root.join(extra);
+        if candidate.is_dir() {
+            roots.push(candidate);
+        }
+    }
+
+    // Also find site-packages directories anywhere under repo root (bounded walk).
+    collect_site_packages_dirs(repo_root, &mut roots);
+
+    for root in &roots {
+        if files.len() >= max_files {
+            break;
+        }
+        walk_package_dir(root, max_depth, max_file_size, max_files, &mut files);
+    }
+
+    files
+}
+
+/// Search for `site-packages` directories under `repo_root` using a shallow walk.
+fn collect_site_packages_dirs(repo_root: &Path, roots: &mut Vec<std::path::PathBuf>) {
+    // Walk at most 6 levels deep to find site-packages dirs without excessive traversal.
+    for entry in WalkDir::new(repo_root)
+        .max_depth(6)
+        .into_iter()
+        .filter_entry(|e| {
+            let name = e.file_name().to_string_lossy();
+            // Skip .git and large irrelevant trees, but enter node_modules/vendor to find
+            // nested site-packages (unlikely but possible).
+            !(name == ".git" || name == "target" || name == "dist" || name == "build")
+        })
+    {
+        let Ok(entry) = entry else { continue };
+        if entry.file_type().is_dir() && entry.file_name() == "site-packages" {
+            let path = entry.into_path();
+            if !roots.contains(&path) {
+                roots.push(path);
+            }
+        }
+    }
+}
+
+/// Walk a single dependency directory collecting scannable files.
+fn walk_package_dir(
+    root: &Path,
+    max_depth: usize,
+    max_file_size: u64,
+    max_files: usize,
+    files: &mut Vec<std::path::PathBuf>,
+) {
+    for entry in WalkDir::new(root)
+        .max_depth(max_depth)
+        .into_iter()
+        .filter_entry(|e| {
+            let name = e.file_name().to_string_lossy();
+            // Only skip .git inside packages — other hidden directories may
+            // contain attack code (e.g. .helpers/, .bin/, .npmrc).
+            name != ".git"
+        })
+    {
+        if files.len() >= max_files {
+            break;
+        }
+        let Ok(entry) = entry else { continue };
+        if !entry.file_type().is_file() {
+            continue;
+        }
+        if !has_extension(entry.path(), PKG_SCAN_EXTENSIONS) {
+            continue;
+        }
+        // Skip files exceeding size limit.
+        if let Ok(meta) = entry.metadata()
+            && meta.len() > max_file_size
+        {
+            continue;
+        }
+        files.push(entry.into_path());
+    }
+}
+
+/// Scan a single file's content against all package scan category patterns.
+fn scan_package_file(
+    rel: &Path,
+    content: &str,
+    category_patterns: &[PkgCategoryPatterns<'_>],
+    findings: &mut Vec<String>,
+) {
+    let lines: Vec<&str> = content.lines().collect();
+    let mut seen = HashSet::new();
+
+    // Pass 1: per-line matching
+    for (line_num, line) in lines.iter().enumerate() {
+        for (category, patterns) in category_patterns {
+            for (label, re) in patterns {
+                if re.is_match(line) {
+                    let finding = format!(
+                        "  {}:{}: [{}] {}",
+                        rel.display(),
+                        line_num + 1,
+                        category,
+                        label,
+                    );
+                    if seen.insert(finding.clone()) {
+                        findings.push(finding);
+                    }
+                }
+            }
+        }
+        check_high_entropy_strings(line, rel, line_num, findings, &mut seen);
+    }
+
+    // Pass 2: sliding 3-line window for cross-line pattern detection
+    if lines.len() >= 2 {
+        for i in 0..lines.len().saturating_sub(2) {
+            let end = (i + 3).min(lines.len());
+            let window: String = lines[i..end].join(" ");
+            for (category, patterns) in category_patterns {
+                for (label, re) in patterns {
+                    if re.is_match(&window) {
+                        let finding = format!(
+                            "  {}:{}~{}: [{}] {} (multi-line)",
+                            rel.display(),
+                            i + 1,
+                            end,
+                            category,
+                            label,
+                        );
+                        if seen.insert(finding.clone()) {
+                            findings.push(finding);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Format the final package scan output and determine pass/fail status.
+fn format_package_scan_results(findings: &[String], severity: &str) -> (ActionStatus, String) {
+    if findings.is_empty() {
+        return (
+            ActionStatus::Passed,
+            "No suspicious patterns detected in dependency packages.".to_owned(),
+        );
+    }
+    let mut out = format!(
+        "Found {} suspicious pattern(s) in dependency packages:\n",
+        findings.len()
+    );
+    for f in findings.iter().take(PKG_SCAN_MAX_FINDINGS_DISPLAY) {
+        out.push_str(f);
+        out.push('\n');
+    }
+    if findings.len() > PKG_SCAN_MAX_FINDINGS_DISPLAY {
+        let _ = writeln!(
+            out,
+            "  ... and {} more",
+            findings.len() - PKG_SCAN_MAX_FINDINGS_DISPLAY
+        );
+    }
+    let status = if severity == "warn" {
+        ActionStatus::Passed
+    } else {
+        ActionStatus::Failed
+    };
+    (status, out)
+}
+
+/// Extract printable ASCII runs from binary data and scan for suspicious strings.
+fn scan_binary_strings(rel: &Path, data: &[u8], findings: &mut Vec<String>) {
+    const MIN_RUN_LEN: usize = 12;
+    let suspicious_patterns: &[(&str, &str)] = &[
+        ("Embedded URL in binary", r"https?://[^\s'\x22]{10,}"),
+        (
+            "Embedded shell path in binary",
+            r"/bin/(?:sh|bash|zsh|dash)\b",
+        ),
+        (
+            "Embedded /etc/ path in binary",
+            r"/etc/(?:passwd|shadow|hosts|sudoers)\b",
+        ),
+        (
+            "Embedded SSH path in binary",
+            r"\.ssh/(?:id_rsa|id_ed25519|authorized_keys)\b",
+        ),
+        ("Embedded reverse shell in binary", r"/dev/tcp/\d"),
+        (
+            "Embedded eval/exec in binary",
+            r"\b(?:eval|exec|system|popen)\s*\(",
+        ),
+        (
+            "Embedded base64 decode in binary",
+            r"(?:atob|b64decode|Base64\.decode|Buffer\.from)\s*\(",
+        ),
+        (
+            "Embedded credential env var name in binary",
+            r"(?:AWS_SECRET_ACCESS_KEY|AWS_ACCESS_KEY_ID|GITHUB_TOKEN|NPM_TOKEN|PYPI_TOKEN|DATABASE_URL|VAULT_TOKEN)",
+        ),
+        (
+            "Embedded Windows credential path in binary",
+            r"(?i)(?:DPAPI|CryptUnprotectData|Microsoft\\\\Credentials)",
+        ),
+        (
+            "Embedded HTTP header in binary (manual request construction)",
+            r"(?:Content-Type|Authorization|X-Api-Key)\s*:",
+        ),
+    ];
+
+    // Compile patterns
+    let compiled: Vec<(&str, Regex)> = suspicious_patterns
+        .iter()
+        .filter_map(|(label, pat)| Regex::new(pat).ok().map(|re| (*label, re)))
+        .collect();
+
+    if compiled.is_empty() {
+        return;
+    }
+
+    // Extract printable ASCII runs and check against patterns
+    let mut run_start = None;
+    let mut i = 0;
+    while i < data.len() {
+        let b = data[i];
+        if b.is_ascii_graphic() || b == b' ' {
+            if run_start.is_none() {
+                run_start = Some(i);
+            }
+        } else if let Some(start) = run_start {
+            let run_len = i - start;
+            if run_len >= MIN_RUN_LEN
+                && let Ok(s) = std::str::from_utf8(&data[start..i])
+            {
+                for (label, re) in &compiled {
+                    if re.is_match(s) {
+                        findings.push(format!(
+                            "  {}:byte_{}: [binary_payload] {}",
+                            rel.display(),
+                            start,
+                            label,
+                        ));
+                    }
+                }
+            }
+            run_start = None;
+        }
+        i += 1;
+    }
+    // Handle trailing run
+    if let Some(start) = run_start {
+        let run_len = data.len() - start;
+        if run_len >= MIN_RUN_LEN
+            && let Ok(s) = std::str::from_utf8(&data[start..])
+        {
+            for (label, re) in &compiled {
+                if re.is_match(s) {
+                    findings.push(format!(
+                        "  {}:byte_{}: [binary_payload] {}",
+                        rel.display(),
+                        start,
+                        label,
+                    ));
+                }
+            }
+        }
+    }
+}
+
+/// Build all enabled category pattern sets for the package scanner.
+fn build_package_scan_patterns<'a>(
+    enabled: &HashSet<&str>,
+) -> ActionsResult<Vec<PkgCategoryPatterns<'a>>> {
+    let mut out = Vec::new();
+    if enabled.contains("obfuscation") {
+        out.push(("obfuscation", build_obfuscation_patterns()?));
+    }
+    if enabled.contains("dynamic_exec") {
+        out.push(("dynamic_exec", build_dynamic_exec_patterns()?));
+    }
+    if enabled.contains("suspicious_network") {
+        out.push(("suspicious_network", build_suspicious_network_patterns()?));
+    }
+    if enabled.contains("fs_tampering") {
+        out.push(("fs_tampering", build_fs_tampering_patterns()?));
+    }
+    if enabled.contains("install_hooks") {
+        out.push(("install_hooks", build_install_hook_patterns()?));
+    }
+    if enabled.contains("exfiltration") {
+        out.push(("exfiltration", build_exfiltration_patterns()?));
+    }
+    if enabled.contains("conditional_exec") {
+        out.push(("conditional_exec", build_conditional_exec_patterns()?));
+    }
+    if enabled.contains("unicode_attacks") {
+        out.push(("unicode_attacks", build_unicode_attack_patterns()?));
+    }
+    if enabled.contains("steganography") {
+        out.push(("steganography", build_steganography_patterns()?));
+    }
+    if enabled.contains("persistence") {
+        out.push(("persistence", build_persistence_patterns()?));
+    }
+    Ok(out)
+}
+
+fn build_conditional_exec_patterns<'a>() -> ActionsResult<Vec<PkgNamedPattern<'a>>> {
+    compile_pkg_patterns(&[
+        (
+            "Date-gated execution (year/month check)",
+            r"\bnew\s+Date\(\).*(?:getFullYear|getMonth|getDate)\s*\(\)\s*[><=!]=?\s*\d",
+        ),
+        (
+            "Date.now() threshold gate",
+            r"\bDate\.now\(\)\s*[><=]=?\s*\d{10,13}\b",
+        ),
+        (
+            "Python datetime date-gate",
+            r"(?:datetime\.now|date\.today)\s*\(\).*[><=!]=",
+        ),
+        (
+            "CI environment absence check",
+            r"(?:process\.env\.CI|os\.environ\.get\(['\x22]CI['\x22])\s*[!=]=",
+        ),
+        (
+            "Hostname-conditional execution",
+            r"(?:os\.hostname\(\)|socket\.gethostname\(\))\s*[!=]==?",
+        ),
+        (
+            "npm_package_name conditional (dependency confusion)",
+            r"process\.env\.npm_package_name\s*[!=]==?",
+        ),
+        (
+            "USER/LOGNAME environment check",
+            r"process\.env\.(?:USER|LOGNAME|USERNAME)\s*[!=]==?",
+        ),
+    ])
+}
+
+fn build_unicode_attack_patterns<'a>() -> ActionsResult<Vec<PkgNamedPattern<'a>>> {
+    compile_pkg_patterns(&[
+        (
+            "Bidirectional text override (Trojan Source CVE-2021-42574)",
+            r"[\u{202A}-\u{202E}\u{2066}-\u{2069}]",
+        ),
+        (
+            "Zero-width character in code (invisible manipulation)",
+            r"[\u{200B}\u{200C}\u{200D}\u{FEFF}]",
+        ),
+        (
+            "Cyrillic homoglyph in code (visual spoofing)",
+            r"[\u{0430}\u{0435}\u{043E}\u{0441}\u{0440}\u{0445}\u{0443}]",
+        ),
+        (
+            "Fullwidth Latin characters (keyword evasion via Unicode normalization)",
+            r"[\u{FF01}-\u{FF5E}]",
+        ),
+        (
+            "Mathematical Alphanumeric Symbols (transpiler-normalized evasion)",
+            r"[\u{1D400}-\u{1D7FF}]",
+        ),
+    ])
+}
+
+fn build_steganography_patterns<'a>() -> ActionsResult<Vec<PkgNamedPattern<'a>>> {
+    compile_pkg_patterns(&[
+        (
+            "PIL/Pillow pixel access (potential steganography)",
+            r"\b(?:getpixel|putpixel|img\.load)\s*\(",
+        ),
+        (
+            "LSB bit extraction pattern",
+            r"\[\s*[0-3]\s*\]\s*&\s*(?:0x0?1|1\b)|>>\s*7\s*&\s*1",
+        ),
+        (
+            "EXIF metadata extraction for payload",
+            r"\b(?:_getexif|exifread\.process_file|piexif\.load)\b",
+        ),
+        (
+            "Steganography library import",
+            r"\b(?:from\s+stegano|import\s+stegpy|stegano\.lsb)\b",
+        ),
+        (
+            "Image fetch with binary processing",
+            r"(?:requests\.get|urllib\.request\.urlopen|fetch)\s*\(.*\.(?:png|jpg|jpeg|bmp|gif)['\x22?]",
+        ),
+    ])
+}
+
+/// Compile a slice of `(label, pattern)` pairs into `PkgNamedPattern` vec.
+fn compile_pkg_patterns<'a>(pairs: &[(&'a str, &str)]) -> ActionsResult<Vec<PkgNamedPattern<'a>>> {
+    pairs
+        .iter()
+        .map(|(label, pat)| {
+            Regex::new(pat)
+                .map(|re| (*label, re))
+                .map_err(|e| ActionsError::BuiltinError {
+                    reason: format!("package_scan regex error for '{label}': {e}"),
+                })
+        })
+        .collect()
+}
+
+fn build_obfuscation_patterns<'a>() -> ActionsResult<Vec<PkgNamedPattern<'a>>> {
+    compile_pkg_patterns(&[
+        (
+            "atob() with long argument",
+            r"\batob\s*\(\s*['\x22][A-Za-z0-9+/=]{50,}",
+        ),
+        (
+            "Buffer.from with base64 decode",
+            r"\bBuffer\.from\s*\(.*['\x22]base64['\x22]",
+        ),
+        ("Python base64.b64decode", r"\bbase64\.b64decode\b"),
+        ("Python base64.decodebytes", r"\bbase64\.decodebytes\b"),
+        ("Ruby/Java Base64.decode", r"\bBase64\.decode"),
+        (
+            "Long hex-encoded sequence",
+            r"(?:0x[0-9a-fA-F]{2}[,\s]*){10,}",
+        ),
+        (
+            "Repeated hex escape sequences",
+            r"(?:\\x[0-9a-fA-F]{2}){10,}",
+        ),
+        (
+            "String.fromCharCode with multiple args",
+            r"\bString\.fromCharCode\s*\([\d,\s]{20,}\)",
+        ),
+        (
+            "Multiple chr() calls on same line",
+            r"(?:chr\s*\(\s*\d+\s*\).*){4,}",
+        ),
+        ("Repeated unicode escapes", r"(?:\\u00[0-9a-fA-F]{2}){8,}"),
+        (
+            "eval with decode/unescape",
+            r"\beval\s*\(.*(?:decode|unescape|atob|fromCharCode)",
+        ),
+        (
+            "Function constructor with string",
+            r"\bFunction\s*\(\s*['\x22]",
+        ),
+        (
+            "decodeURIComponent with long encoded string",
+            r"\bdecodeURIComponent\s*\(\s*['\x22](?:%[0-9a-fA-F]{2}){10,}",
+        ),
+        ("JSFuck-style obfuscation", r"\[\+\[\]\]\+|\!\!\[\]"),
+        (
+            "Object.prototype property assignment",
+            r"\bObject\.prototype\s*\.\s*\w+\s*=",
+        ),
+        (
+            "__proto__ property assignment",
+            r"\[[\s'\x22]*__proto__[\s'\x22]*\]\s*=",
+        ),
+        (
+            "defineProperty on prototype chain",
+            r"\bObject\.defineProperty\s*\(\s*(?:Object\.prototype|[A-Za-z_$]\w*\.prototype)\b",
+        ),
+        (
+            "constructor.prototype manipulation",
+            r"\bconstructor\s*\.\s*prototype\s*\.\s*\w+\s*=",
+        ),
+        (
+            "String.fromCharCode with spread operator",
+            r"\bString\.fromCharCode\s*\(\s*\.\.\.",
+        ),
+        (
+            "Large numeric array (potential char-code table)",
+            r"\[\s*(?:\d{1,3}\s*,\s*){15,}\d{1,3}\s*\]",
+        ),
+        (
+            "Array.map with fromCharCode assembly",
+            r"\.map\s*\([^)]*fromCharCode",
+        ),
+        (
+            "reduce/join char-code assembly",
+            r"\.(?:reduce|join)\s*\(.*fromCharCode",
+        ),
+        (
+            "ROT13 or Caesar cipher pattern",
+            r"(?i)(?:charCodeAt|fromCharCode).*(?:\+\s*13|\-\s*13|%\s*26)",
+        ),
+        (
+            "XOR decryption loop pattern",
+            r"(?:charCodeAt|charAt).*\^\s*(?:0x[0-9a-fA-F]+|\d+)",
+        ),
+        (
+            "Compressed payload (zlib/gzip inflate)",
+            r"\b(?:zlib\.inflate|zlib\.gunzip|pako\.inflate|decompress)\s*\(",
+        ),
+    ])
+}
+
+fn build_dynamic_exec_patterns<'a>() -> ActionsResult<Vec<PkgNamedPattern<'a>>> {
+    compile_pkg_patterns(&[
+        (
+            "eval with variable/concatenation",
+            r"\beval\s*\([^'\x22)]+\)",
+        ),
+        ("new Function() constructor", r"\bnew\s+Function\s*\("),
+        (
+            "Python exec with compile/decode",
+            r"\bexec\s*\(.*(?:compile|decode|b64decode|decompress)",
+        ),
+        ("Ruby eval with pack/unpack", r"\beval\b.*(?:pack|unpack)"),
+        ("Python assert with exec", r"\bassert\b.*\bexec\s*\("),
+        (
+            "vm.runInNewContext (Node.js sandbox escape)",
+            r"\bvm\.runInNewContext\b",
+        ),
+        (
+            "vm.createContext (Node.js sandbox escape)",
+            r"\bvm\.createContext\b",
+        ),
+        ("Reflect.apply with dynamic args", r"\bReflect\.apply\s*\("),
+        ("Python __import__ dynamic import", r"\b__import__\s*\("),
+        (
+            "Python importlib.import_module",
+            r"\bimportlib\.import_module\s*\(",
+        ),
+        (
+            "require with non-literal argument",
+            r"\brequire\s*\(\s*[^'\x22\s)]",
+        ),
+        ("dlopen dynamic library loading", r"\bdlopen\s*\("),
+        (
+            "ctypes.CDLL dynamic library loading",
+            r"\bctypes\.CDLL\s*\(",
+        ),
+        (
+            "Native addon require (.node file)",
+            r"\brequire\s*\(['\x22][^'\x22]*\.node['\x22]\s*\)",
+        ),
+        (
+            "WebAssembly.instantiate call",
+            r"\bWebAssembly\.(?:instantiate|compile|instantiateStreaming)\s*\(",
+        ),
+        (
+            "WebAssembly loaded from file",
+            r"(?:readFileSync|readFile)\s*\([^)]*\.wasm",
+        ),
+        (
+            "ffi-napi native binding",
+            r"\bffi-napi\b|\brequire\s*\(['\x22]ffi-napi['\x22]\)",
+        ),
+    ])
+}
+
+fn build_suspicious_network_patterns<'a>() -> ActionsResult<Vec<PkgNamedPattern<'a>>> {
+    compile_pkg_patterns(&[
+        (
+            "Node.js http.get/request",
+            r"\bhttps?\.(?:get|request)\s*\(",
+        ),
+        ("XMLHttpRequest in dependency", r"\bXMLHttpRequest\b"),
+        (
+            "fetch() call in dependency",
+            r"\bfetch\s*\(\s*['\x22]https?://",
+        ),
+        (
+            "Python urllib.request.urlopen",
+            r"\burllib\.request\.urlopen\b",
+        ),
+        ("Python urllib2.urlopen", r"\burllib2\.urlopen\b"),
+        ("Python requests.get/post", r"\brequests\.(?:get|post)\s*\("),
+        ("Ruby Net::HTTP", r"\bNet::HTTP\b"),
+        (
+            "Python socket.connect",
+            r"\bsocket\.(?:connect|create_connection)\s*\(",
+        ),
+        (
+            "Node.js net.connect/createConnection",
+            r"\bnet\.(?:connect|createConnection)\s*\(",
+        ),
+        (
+            "Node.js dns.resolve/lookup",
+            r"\bdns\.(?:resolve|lookup)\s*\(",
+        ),
+        (
+            "child_process with curl/wget",
+            r"\bchild_process\b.*(?:curl|wget)",
+        ),
+        (
+            "IP-based URL in dependency",
+            r"https?://\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}",
+        ),
+        ("Onion domain reference", r"\.onion\b"),
+        ("Telegram bot API URL", r"api\.telegram\.org/bot"),
+        ("Discord webhook URL", r"discord(?:app)?\.com/api/webhooks"),
+        (
+            "DNS exfiltration OOB callback domain",
+            r"(?i)(?:\.interactsh\.com|\.burpcollaborator\.net|canarytokens\.com|\.dnslog\.cn|\.requestcatcher\.com|pipedream\.net|\.oastify\.com)\b",
+        ),
+        (
+            "DNS tunneling tool reference",
+            r"\b(?:dnscat|iodine|heyoka|dns2tcp)\b",
+        ),
+        (
+            "DNS resolve with template literal exfil",
+            r"dns\.(?:resolve|lookup)\s*\(`\$\{",
+        ),
+        (
+            "Data encoded into DNS subdomain",
+            r"dns\.(?:resolve|lookup)\s*\(.*\+.*\+.*\.\s*['\x22]",
+        ),
+        (
+            "Extremely high version number (dependency confusion signal)",
+            r#""version"\s*:\s*"(?:9\d{3}|[1-9]\d{4,})\."#,
+        ),
+        (
+            "ethers.js blockchain provider/contract (C2 channel)",
+            r"\bnew\s+ethers\.(?:JsonRpcProvider|WebSocketProvider|Contract)\b",
+        ),
+        (
+            "web3.js Contract call (blockchain C2)",
+            r"\bnew\s+Web3\b|\bnew\s+web3\.eth\.Contract\b",
+        ),
+        (
+            "IPFS gateway fetch",
+            r"https?://(?:ipfs\.io|cloudflare-ipfs\.com|gateway\.pinata\.cloud|dweb\.link)/ipfs/",
+        ),
+        (
+            "IPFS CID string literal",
+            r"['\x22`](?:Qm[1-9A-HJ-NP-Za-km-z]{44}|bafy[a-z2-7]{55})['\x22`]",
+        ),
+        (
+            "Infura RPC endpoint (blockchain node)",
+            r"https?://[a-z-]+\.infura\.io/",
+        ),
+        (
+            "Alchemy RPC endpoint (blockchain node)",
+            r"https?://[a-z-]+-mainnet\.g\.alchemy\.com/",
+        ),
+        (
+            "Rust reqwest HTTP call in dependency",
+            r"\breqwest::(?:blocking::)?(?:get|post|Client)\b",
+        ),
+        (
+            "Rust ureq HTTP call in dependency",
+            r"\bureq::(?:get|post|agent)\b",
+        ),
+        (
+            "publishConfig with non-standard registry",
+            r#""(?:registry|publishConfig)"\s*:.*"https?://"#,
+        ),
+    ])
+}
+
+fn build_fs_tampering_patterns<'a>() -> ActionsResult<Vec<PkgNamedPattern<'a>>> {
+    compile_pkg_patterns(&[
+        (
+            "fs.writeFile with path traversal",
+            r"\bfs\.writeFile(?:Sync)?\s*\(.*\.\./",
+        ),
+        (
+            "os.path.expanduser with write",
+            r"\bos\.path\.expanduser\b.*(?:open|write)",
+        ),
+        (
+            "path.join with homedir",
+            r"\bpath\.join\s*\(.*(?:os\.homedir|process\.env\.HOME)",
+        ),
+        (
+            "Reading SSH/AWS/NPM credentials",
+            r"(?:\.ssh|\.aws|\.npmrc|\.gitconfig)\b.*(?:readFile|readFileSync|open\s*\()",
+        ),
+        (
+            "Sensitive path read via readFileSync",
+            r"\bfs\.readFileSync\s*\(.*(?:\.ssh|\.aws|\.npmrc|\.gitconfig)",
+        ),
+        (
+            "Write to /tmp with exec/spawn",
+            r"/tmp/.*(?:exec|spawn)|(?:exec|spawn).*?/tmp/",
+        ),
+        (
+            "npm lifecycle hook data access",
+            r"\bprocess\.env\.npm_package_",
+        ),
+        (
+            "PATH environment modification",
+            r"(?:process\.env\.PATH|os\.environ\[.PATH.\])\s*[+=]",
+        ),
+        (
+            "chmod/chown permission change",
+            r"\b(?:chmod|chown|fs\.chmod|fs\.chown)\s*\(",
+        ),
+        (
+            "Write to .github/workflows/ from dependency",
+            r"(?:writeFile|writeFileSync|open\s*\([^,]+['\x22]w)\s*.*\.github[/\\]workflows",
+        ),
+        (
+            "GitHub Actions workflow file creation",
+            r"\.github[/\\]workflows[/\\].*\.yml",
+        ),
+        (
+            "AWS credentials file read",
+            r"(?:readFile|readFileSync|open\s*\()\s*.*\.aws/credentials\b",
+        ),
+        (
+            "Kubernetes kubeconfig read",
+            r"(?:readFile|readFileSync|open\s*\()\s*.*\.kube/config\b",
+        ),
+        (
+            "Docker config.json read (registry creds)",
+            r"(?:readFile|readFileSync|open\s*\()\s*.*\.docker/config\.json\b",
+        ),
+        (
+            "Terraform state file read",
+            r"(?:readFile|readFileSync|open\s*\()\s*.*terraform\.tfstate\b",
+        ),
+        (
+            "GCP default credentials read",
+            r"(?:readFile|readFileSync|open\s*\()\s*.*application_default_credentials\.json\b",
+        ),
+    ])
+}
+
+fn build_install_hook_patterns<'a>() -> ActionsResult<Vec<PkgNamedPattern<'a>>> {
+    compile_pkg_patterns(&[
+        ("npm preinstall script", r#""\s*preinstall\s*"\s*:"#),
+        ("npm postinstall script", r#""\s*postinstall\s*"\s*:"#),
+        ("npm install script", r#""\s*install\s*"\s*:"#),
+        ("setup.py cmdclass override", r"\bcmdclass\s*="),
+        (
+            "__init__.py with exec/eval on import",
+            r"(?:exec|eval)\s*\(.*(?:compile|decode|open|read)",
+        ),
+        ("npmrc/pypirc credential access", r"(?:\.npmrc|\.pypirc)\b"),
+        ("binding.gyp with suspicious actions", r"binding\.gyp\b"),
+        (
+            "Post-install shell script",
+            r"(?:post_install|preinstall|postinstall)\.sh\b",
+        ),
+        (
+            "node-gyp build in scripts",
+            r#""(?:build|rebuild)"\s*:.*"node-gyp"#,
+        ),
+        ("node-pre-gyp native module", r"\bnode-pre-gyp\b"),
+        (
+            "napi build system",
+            r"\b(?:napi-build|cmake-js|prebuild-install)\b",
+        ),
+        (
+            "exports field with non-standard entry redirect",
+            r#""exports"\s*:\s*\{[^}]*"\."#,
+        ),
+        (
+            "main/module pointing outside package root",
+            r#""(?:main|module)"\s*:\s*"\.\."#,
+        ),
+        (
+            "bin entry pointing to shell script",
+            r#""bin"\s*:\s*\{[^}]*:\s*"[^"]*\.sh""#,
+        ),
+    ])
+}
+
+fn build_exfiltration_patterns<'a>() -> ActionsResult<Vec<PkgNamedPattern<'a>>> {
+    compile_pkg_patterns(&[
+        (
+            "os.hostname/userInfo collection",
+            r"\bos\.(?:hostname|userInfo)\s*\(",
+        ),
+        (
+            "JSON.stringify(process.env) serialization",
+            r"\bJSON\.stringify\s*\(\s*process\.env\s*\)",
+        ),
+        (
+            "whoami/hostname command execution",
+            r"(?:exec|spawn|system)\s*\(.*(?:whoami|hostname|uname)\b",
+        ),
+        (
+            "Parent package.json read",
+            r"(?:readFile|readFileSync|require)\s*\(.*\.\./.*package\.json",
+        ),
+        (
+            "Clipboard access in Node.js context",
+            r"\bnavigator\.clipboard\b",
+        ),
+        ("Cookie access in Node.js context", r"\bdocument\.cookie\b"),
+        (
+            "OS keychain/keytar access",
+            r"\b(?:keytar|keychain)\b.*(?:get|find|read)",
+        ),
+        (
+            "SSH private key file read",
+            r"(?:id_rsa|id_ed25519|id_ecdsa)\b.*(?:readFile|readFileSync|open\s*\()",
+        ),
+        (
+            "SSH key read via file path",
+            r"(?:readFile|readFileSync|open\s*\().*(?:id_rsa|id_ed25519|id_ecdsa)\b",
+        ),
+        (
+            "Environment exfil via DNS",
+            r"dns\.(?:resolve|lookup)\s*\(.*(?:process\.env|environ|getenv|ENV\[)",
+        ),
+        ("ngrok tunnel endpoint", r"(?i)\.ngrok\.io\b"),
+    ])
+}
+
+fn build_persistence_patterns<'a>() -> ActionsResult<Vec<PkgNamedPattern<'a>>> {
+    compile_pkg_patterns(&[
+        ("crontab write/manipulation", r"\bcrontab\s+-[eli]\b"),
+        (
+            "Cron directory write",
+            r"(?:writeFile|writeFileSync|open\s*\().*(?:/etc/cron|/var/spool/cron)",
+        ),
+        (
+            "Shell RC file write (persistence)",
+            r"(?:writeFile|writeFileSync|open\s*\().*(?:\.bashrc|\.zshrc|\.profile|\.bash_profile)",
+        ),
+        (
+            "SSH authorized_keys modification",
+            r"(?:writeFile|writeFileSync|open\s*\().*authorized_keys",
+        ),
+        (
+            "Git hooks injection",
+            r"(?:writeFile|writeFileSync|open\s*\().*\.git[/\\]hooks[/\\]",
+        ),
+        (
+            "systemd unit installation",
+            r"(?:/etc/systemd/system/|/usr/lib/systemd/system/).*\.service|systemctl\s+(?:enable|daemon-reload)",
+        ),
+        (
+            "macOS launchd plist installation",
+            r"(?:Library[/\\]LaunchAgents|Library[/\\]LaunchDaemons)[/\\].*\.plist|launchctl\s+(?:load|bootstrap)",
+        ),
+        ("Windows scheduled task creation", r"\bschtasks\s+/create\b"),
+        (
+            "Windows registry Run key persistence",
+            r"(?i)(?:HKCU|HKLM)\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run",
+        ),
+    ])
+}
+
+/// Compute Shannon entropy (bits per byte) over a byte slice.
+fn shannon_entropy(s: &[u8]) -> f64 {
+    if s.is_empty() {
+        return 0.0;
+    }
+    let mut freq = [0u32; 256];
+    for &b in s {
+        freq[b as usize] += 1;
+    }
+    // Precision loss is acceptable: entropy calculation is inherently approximate,
+    // and string lengths exceeding 2^52 bytes are not realistic.
+    #[allow(clippy::cast_precision_loss)]
+    let len = s.len() as f64;
+    let mut entropy = 0.0_f64;
+    for &count in &freq {
+        if count > 0 {
+            let p = f64::from(count) / len;
+            entropy -= p * p.log2();
+        }
+    }
+    entropy
+}
+
+/// Minimum string literal length to consider for entropy analysis.
+const ENTROPY_MIN_STRING_LEN: usize = 64;
+
+/// Entropy threshold (bits/byte) above which a string is flagged.
+const ENTROPY_THRESHOLD: f64 = 5.2;
+
+/// Scan a line for high-entropy string literals that may contain encrypted payloads.
+fn check_high_entropy_strings(
+    line: &str,
+    rel: &Path,
+    line_num: usize,
+    findings: &mut Vec<String>,
+    seen: &mut HashSet<String>,
+) {
+    // Extract string literals (single-quoted, double-quoted)
+    for delim in ['"', '\''] {
+        let mut chars = line.char_indices();
+        while let Some((start, ch)) = chars.next() {
+            if ch == delim {
+                let content_start = start + 1;
+                let mut escaped = false;
+                let mut end = None;
+                for (idx, c) in chars.by_ref() {
+                    if escaped {
+                        escaped = false;
+                        continue;
+                    }
+                    if c == '\\' {
+                        escaped = true;
+                        continue;
+                    }
+                    if c == delim {
+                        end = Some(idx);
+                        break;
+                    }
+                }
+                if let Some(end_idx) = end {
+                    let literal = &line[content_start..end_idx];
+                    if literal.len() >= ENTROPY_MIN_STRING_LEN {
+                        let entropy = shannon_entropy(literal.as_bytes());
+                        if entropy > ENTROPY_THRESHOLD {
+                            let finding = format!(
+                                "  {}:{}: [obfuscation] High-entropy string literal ({:.1} bits/byte, {} chars)",
+                                rel.display(),
+                                line_num + 1,
+                                entropy,
+                                literal.len(),
+                            );
+                            if seen.insert(finding.clone()) {
+                                findings.push(finding);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
