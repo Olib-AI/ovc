@@ -6,7 +6,7 @@
   <strong>Secure, self-hosted version control — encrypted single-file repositories you can store anywhere.</strong>
 </p>
 <p align="center">
-  Every commit, branch, tag, and file history lives in a single encrypted <code>.ovc</code> blob — Ed25519+X25519 key pair encryption, commit signing & verification, full Git interop, cloud sync via any storage provider, a built-in CI/CD actions engine with 28 built-in checks, and a premium web UI — all in a <strong>single 16 MB binary</strong>.
+  Every commit, branch, tag, and file history lives in a single encrypted <code>.ovc</code> blob — Ed25519+X25519 key pair encryption, commit signing & verification, full Git interop, cloud sync via any storage provider, a built-in CI/CD actions engine with 28 built-in checks, and a premium web UI — all in a <strong>single 22 MB binary</strong>.
 </p>
 <p align="center">
   Built by <a href="https://www.olib.ai">Olib AI</a>
