@@ -48,18 +48,16 @@ Modern teams need version control they fully own — without giving up the conve
 
 ### Install
 
-**One-line install (Linux & macOS):**
+**Linux & macOS:**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Olib-AI/ovc/main/scripts/install.sh | bash
 ```
 
-Or download and inspect first:
+**Windows (PowerShell):**
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/Olib-AI/ovc/main/scripts/install.sh -o install.sh
-chmod +x install.sh
-./install.sh
+```powershell
+irm https://raw.githubusercontent.com/Olib-AI/ovc/main/scripts/install.ps1 | iex
 ```
 
 **Installer options:**
