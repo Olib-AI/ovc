@@ -12,11 +12,54 @@ actions:
     builtin: secret_scan
     trigger: pre-commit
 
-  merge-conflict-check:
+  pre-commit-conflict-check:
     category: quality
     display_name: "Merge Conflict Check"
     builtin: merge_conflict_check
     trigger: pre-commit
+
+  # ── Supply Chain Security ─────────────────────────────────
+  supply-chain-scan:
+    category: security
+    display_name: "Supply Chain Scan"
+    builtin: supply_chain_scan
+    trigger: pre-commit
+    config:
+      severity: warn
+
+  package-scan:
+    category: security
+    display_name: "Package Scan"
+    builtin: package_scan
+    trigger: pre-commit
+    config:
+      severity: flag
+      max_files: 15000
+
+  pr-supply-chain-scan:
+    category: security
+    display_name: "PR: Supply Chain Scan"
+    builtin: supply_chain_scan
+    trigger: pull-request
+    config:
+      severity: warn
+
+  pr-package-scan:
+    category: security
+    display_name: "PR: Package Scan"
+    builtin: package_scan
+    trigger: pull-request
+    config:
+      severity: flag
+      max_files: 15000
+
+  merge-supply-chain-scan:
+    category: security
+    display_name: "Merge: Supply Chain Scan"
+    builtin: supply_chain_scan
+    trigger: pre-merge
+    config:
+      severity: warn
 
   # ── Rust Format (auto-fix) ─────────────────────────────────
   rust-fmt:
@@ -312,6 +355,7 @@ branch_protection:
   - pattern: "main"
     required_checks:
       - merge-secret-scan
+      - merge-supply-chain-scan
       - merge-conflict-check
       - merge-rust-check
       - merge-rust-test
