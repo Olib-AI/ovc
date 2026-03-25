@@ -384,7 +384,7 @@ Features: commit graph with SVG lanes, split/unified diff viewer, blame view, co
 
 ## Actions Engine
 
-Built-in CI/CD with 27 checks that require no external tools, plus support for any shell command:
+Built-in CI/CD with 28 checks that require no external tools, plus support for any shell command:
 
 ```bash
 ovc actions init              # Auto-detect languages, generate config
