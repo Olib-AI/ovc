@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Send, AlertTriangle, ShieldCheck, Loader2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Send, AlertTriangle, ShieldCheck, Loader2, Sparkles, Square } from 'lucide-react';
+import { streamCommitMessage } from '../api/client.ts';
+import { useLlmStream, useLlmConfig } from '../hooks/useLlm.ts';
 
 interface CommitFormProps {
   stagedCount: number;
@@ -13,6 +15,7 @@ interface CommitFormProps {
   defaultAuthorName?: string;
   defaultAuthorEmail?: string;
   lastCommitMessage?: string;
+  repoId?: string;
 }
 
 function CommitForm({
@@ -22,6 +25,7 @@ function CommitForm({
   defaultAuthorName,
   defaultAuthorEmail,
   lastCommitMessage,
+  repoId,
 }: CommitFormProps) {
   const [message, setMessage] = useState('');
   const [authorName, setAuthorName] = useState(
@@ -48,6 +52,24 @@ function CommitForm({
 
   const [amend, setAmend] = useState(false);
   const [sign, setSign] = useState(false);
+
+  // LLM commit message generation
+  const { data: llmConfig } = useLlmConfig(repoId);
+  const llmEnabled = !!repoId && (!!llmConfig?.server_enabled || !!llmConfig?.base_url) && (llmConfig?.enabled_features?.commit_message ?? true);
+
+  const streamFn = useCallback(
+    (signal: AbortSignal) => streamCommitMessage(repoId!, signal),
+    [repoId],
+  );
+  const { content: aiContent, isStreaming: aiStreaming, error: aiError, progress: aiProgress, start: aiStart, cancel: aiCancel, reset: aiReset } = useLlmStream(streamFn);
+
+  // Write streamed content into the message textarea.
+  useEffect(() => {
+    if (aiContent) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setMessage(aiContent);
+    }
+  }, [aiContent]);
 
   const handleAmendToggle = (checked: boolean) => {
     setAmend(checked);
@@ -143,10 +165,44 @@ function CommitForm({
           Sign
         </label>
 
-        <span
-          className={`text-[11px] ${firstLine.length > 72 ? 'text-status-deleted' : 'text-text-muted'}`}
-        >
-          {firstLine.length}/72
+        {llmEnabled && (
+          <button
+            type="button"
+            onClick={() => {
+              if (aiStreaming) {
+                aiCancel();
+              } else {
+                aiReset();
+                aiStart();
+              }
+            }}
+            disabled={stagedCount === 0 && !amend}
+            title={aiStreaming ? 'Stop generating' : 'Generate commit message with AI'}
+            className={`flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] transition-colors ${
+              aiStreaming
+                ? 'border border-status-deleted/30 bg-status-deleted/10 text-status-deleted'
+                : 'text-accent hover:bg-accent/10'
+            } disabled:opacity-40 disabled:cursor-not-allowed`}
+          >
+            {aiStreaming ? <Square size={10} /> : <Sparkles size={11} />}
+            {aiStreaming ? 'Stop' : 'AI'}
+          </button>
+        )}
+
+        {aiProgress && (
+          <span className="text-[11px] text-accent animate-pulse">
+            {aiProgress.phase === 'analyzing'
+              ? `Analyzing ${aiProgress.batch}/${aiProgress.total}...`
+              : 'Generating...'}
+          </span>
+        )}
+
+        {aiError && (
+          <span className="text-[11px] text-status-deleted" title={aiError}>AI error</span>
+        )}
+
+        <span className="text-[11px] text-text-muted">
+          {firstLine.length}
         </span>
 
         <div className="ml-auto">

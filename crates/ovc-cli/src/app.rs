@@ -768,6 +768,24 @@ pub struct ServeArgs {
     /// Scans one level deep for project directories containing .ovc-link.
     #[arg(long, env = "OVC_WORKDIR_SCAN")]
     pub workdir_scan: Vec<String>,
+    /// Base URL for the local LLM server (e.g., `http://localhost:11434` for Ollama).
+    #[arg(long, env = "OVC_LLM_BASE_URL")]
+    pub llm_base_url: Option<String>,
+    /// Model name for LLM completions (e.g., llama3, codestral, deepseek-coder).
+    #[arg(long, env = "OVC_LLM_MODEL")]
+    pub llm_model: Option<String>,
+    /// API key for the LLM server (most local servers don't require this).
+    #[arg(long, env = "OVC_LLM_API_KEY", hide_env_values = true)]
+    pub llm_api_key: Option<String>,
+    /// Enable LLM-powered features (commit message generation, PR review, etc.).
+    #[arg(long, env = "OVC_LLM_ENABLED")]
+    pub llm_enabled: bool,
+    /// Maximum approximate token count for LLM context.
+    #[arg(long, env = "OVC_LLM_MAX_TOKENS", default_value = "32768")]
+    pub llm_max_tokens: usize,
+    /// LLM request timeout in seconds.
+    #[arg(long, env = "OVC_LLM_TIMEOUT", default_value = "120")]
+    pub llm_timeout_secs: u64,
 }
 
 /// Arguments for `ovc web` (aliases: `ovc ui`, `ovc gui`).

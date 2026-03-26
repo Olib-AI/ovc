@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.ts';
-import { Settings, Trash2, RefreshCw, HardDrive, AlertTriangle, Package, Plus, X, User, Link, FolderOpen, Pin, Info, Archive } from 'lucide-react';
+import { Settings, Trash2, RefreshCw, HardDrive, AlertTriangle, Package, Plus, X, User, Link, FolderOpen, Pin, Info, Archive, Sparkles, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import {
   useRepo,
   useDeleteRepo,
@@ -18,6 +18,7 @@ import {
 } from '../hooks/useRepo.ts';
 import { usePushSync, usePullSync } from '../hooks/useRepo.ts';
 import { useToast } from '../contexts/ToastContext.tsx';
+import { useLlmConfig, useUpdateLlmConfig, useLlmHealth } from '../hooks/useLlm.ts';
 import SyncPanel from '../components/SyncPanel.tsx';
 import LoadingSpinner from '../components/LoadingSpinner.tsx';
 import ArchiveDialog from '../components/ArchiveDialog.tsx';
@@ -191,6 +192,9 @@ function SettingsPage() {
             </button>
           </div>
         </div>
+
+        {/* AI / LLM Integration */}
+        <LlmSettingsSection repoId={repoId ?? ''} />
 
         {/* Repo Info */}
         <div className="rounded-lg border border-border bg-navy-900 p-4">
@@ -517,6 +521,165 @@ function formatBytes(bytes: number): string {
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+}
+
+/** LLM configuration sub-section for the settings page. */
+function LlmSettingsSection({ repoId }: { repoId: string }) {
+  const { data: llmConfig } = useLlmConfig(repoId || undefined);
+  const updateMutation = useUpdateLlmConfig(repoId);
+  const { data: health, refetch: refetchHealth, isFetching: healthLoading } = useLlmHealth(repoId);
+  const toast = useToast();
+
+  const [baseUrl, setBaseUrl] = useState('');
+  const [model, setModel] = useState('');
+  const [maxContextTokens, setMaxContextTokens] = useState(32768);
+  const [temperature, setTemperature] = useState(0.3);
+  const [features, setFeatures] = useState({
+    commit_message: true,
+    pr_description: true,
+    pr_review: true,
+    explain_diff: true,
+  });
+  const [initialised, setInitialised] = useState(false);
+
+  if (llmConfig && !initialised) {
+    setInitialised(true);
+    setBaseUrl(llmConfig.base_url ?? '');
+    setModel(llmConfig.model ?? '');
+    setMaxContextTokens(llmConfig.max_context_tokens ?? 32768);
+    setTemperature(llmConfig.temperature ?? 0.3);
+    if (llmConfig.enabled_features) {
+      setFeatures(llmConfig.enabled_features);
+    }
+  }
+
+  function handleSave() {
+    updateMutation.mutate(
+      {
+        base_url: baseUrl.trim() || undefined,
+        model: model.trim() || undefined,
+        max_context_tokens: maxContextTokens,
+        temperature,
+        enabled_features: features,
+      },
+      {
+        onSuccess: () => toast.success('LLM configuration saved'),
+        onError: (err: Error) => toast.error(err.message),
+      },
+    );
+  }
+
+  const featureToggles: { key: keyof typeof features; label: string }[] = [
+    { key: 'commit_message', label: 'Generate commit messages' },
+    { key: 'pr_review', label: 'AI code review for PRs' },
+    { key: 'pr_description', label: 'Generate PR descriptions' },
+    { key: 'explain_diff', label: 'Explain diffs' },
+  ];
+
+  return (
+    <div className="rounded-lg border border-border bg-navy-900 p-4">
+      <div className="mb-3 flex items-center gap-2">
+        <Sparkles size={14} className="text-accent" />
+        <h2 className="text-sm font-semibold text-text-primary">AI / LLM Integration</h2>
+      </div>
+
+      <p className="mb-3 text-xs text-text-muted">
+        Configure a local LLM server (Ollama, LM Studio, or any OpenAI-compatible API) to enable AI features.
+      </p>
+
+      <div className="space-y-3">
+        <div>
+          <label className="mb-1 block text-xs text-text-muted">Base URL</label>
+          <input
+            value={baseUrl}
+            onChange={(e) => setBaseUrl(e.target.value)}
+            placeholder="http://localhost:11434 (Ollama) or http://localhost:1234 (LM Studio)"
+            className="w-full rounded border border-border bg-navy-950 px-2 py-1.5 text-xs text-text-primary placeholder-text-muted focus:border-accent focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs text-text-muted">Model</label>
+          <input
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            placeholder="llama3, codestral, deepseek-coder, etc."
+            className="w-full rounded border border-border bg-navy-950 px-2 py-1.5 text-xs text-text-primary placeholder-text-muted focus:border-accent focus:outline-none"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-xs text-text-muted">Context Window (tokens)</label>
+            <input
+              type="number"
+              value={maxContextTokens}
+              onChange={(e) => setMaxContextTokens(Number(e.target.value) || 32768)}
+              min={1024}
+              max={131072}
+              step={1024}
+              className="w-full rounded border border-border bg-navy-950 px-2 py-1.5 text-xs text-text-primary focus:border-accent focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-text-muted">Temperature ({temperature.toFixed(1)})</label>
+            <input
+              type="range"
+              value={temperature}
+              onChange={(e) => setTemperature(Number(e.target.value))}
+              min={0}
+              max={2}
+              step={0.1}
+              className="w-full accent-accent"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-xs text-text-muted">Features</label>
+          <div className="space-y-1.5">
+            {featureToggles.map(({ key, label }) => (
+              <label key={key} className="flex items-center gap-2 text-xs text-text-secondary cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={features[key]}
+                  onChange={(e) => setFeatures((prev) => ({ ...prev, [key]: e.target.checked }))}
+                  className="rounded border-border"
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 pt-1">
+          <button
+            onClick={handleSave}
+            disabled={updateMutation.isPending}
+            className="rounded bg-accent px-3 py-1.5 text-xs font-semibold text-navy-950 hover:bg-accent-light disabled:opacity-50"
+          >
+            {updateMutation.isPending ? 'Saving...' : 'Save'}
+          </button>
+
+          <button
+            onClick={() => void refetchHealth()}
+            disabled={healthLoading}
+            className="flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-xs text-text-secondary hover:bg-surface-hover disabled:opacity-50"
+          >
+            {healthLoading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+            Test Connection
+          </button>
+
+          {health && !healthLoading && (
+            <span className={`flex items-center gap-1 text-xs ${health.reachable ? 'text-status-added' : 'text-status-deleted'}`}>
+              {health.reachable ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+              {health.reachable ? `Connected — ${health.model ?? 'unknown model'}` : health.configured ? 'Unreachable' : 'Not configured'}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default SettingsPage;

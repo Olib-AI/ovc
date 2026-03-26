@@ -711,3 +711,46 @@ export interface KeyAuthPayload {
   challenge: string;
   signature: string;
 }
+
+// LLM Integration
+
+export interface LlmFeatureToggles {
+  commit_message: boolean;
+  pr_description: boolean;
+  pr_review: boolean;
+  explain_diff: boolean;
+}
+
+export interface LlmRepoConfig {
+  base_url?: string;
+  model?: string;
+  enabled_features: LlmFeatureToggles;
+}
+
+export interface LlmConfigResponse {
+  server_enabled: boolean;
+  base_url?: string;
+  model?: string;
+  max_context_tokens?: number;
+  temperature?: number;
+  enabled_features?: LlmFeatureToggles;
+}
+
+export interface UpdateLlmConfigPayload {
+  base_url?: string;
+  model?: string;
+  max_context_tokens?: number;
+  temperature?: number;
+  enabled_features?: LlmFeatureToggles;
+}
+
+export interface LlmHealthResponse {
+  configured: boolean;
+  reachable: boolean;
+  model?: string;
+  base_url?: string;
+}
+
+export interface LlmDescriptionResponse {
+  description: string;
+}

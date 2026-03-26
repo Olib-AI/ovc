@@ -65,12 +65,18 @@ pub struct AppState {
     /// effectively invalidating all previously issued tokens in O(1) without
     /// a server-side revocation store.
     pub token_version: Arc<AtomicU64>,
+    /// Server-level LLM configuration for AI-powered features.
+    pub llm_server_config: Arc<ovc_llm::LlmServerConfig>,
 }
 
 impl AppState {
     /// Creates a new `AppState` with the given configuration.
     #[must_use]
-    pub fn new(repos_dir: PathBuf, jwt_secret: String) -> Self {
+    pub fn new(
+        repos_dir: PathBuf,
+        jwt_secret: String,
+        llm_server_config: Arc<ovc_llm::LlmServerConfig>,
+    ) -> Self {
         let mut workdirs = HashMap::new();
 
         // Auto-discover workdirs from OVC_WORKDIR_MAP env var
@@ -97,6 +103,7 @@ impl AppState {
             auth_rate_limits: RwLock::new(HashMap::new()),
             repo_stats_cache: RwLock::new(HashMap::new()),
             token_version: Arc::new(AtomicU64::new(1)),
+            llm_server_config,
         }
     }
 

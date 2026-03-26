@@ -1,0 +1,21 @@
+[package]
+name = "ovc-llm"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Local LLM integration for OVC — OpenAI-compatible API client with intelligent context building"
+
+[lints]
+workspace = true
+
+[dependencies]
+ovc-core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+reqwest = { workspace = true }
+futures = { workspace = true }
+bytes = { workspace = true }
+tracing = { workspace = true }

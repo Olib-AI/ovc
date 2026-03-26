@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.ts';
 import {
@@ -33,6 +33,9 @@ import {
 import { useToast } from '../contexts/ToastContext.tsx';
 import PullRequestViewComponent from '../components/PullRequestView.tsx';
 import ReviewPanel from '../components/ReviewPanel.tsx';
+import LlmPanel from '../components/LlmPanel.tsx';
+import { useLlmStream, useLlmConfig } from '../hooks/useLlm.ts';
+import { streamPrReview } from '../api/client.ts';
 import LoadingSpinner from '../components/LoadingSpinner.tsx';
 import type { MergeStrategy } from '../api/client.ts';
 import type { BranchProtectionInfo, PrCheckResult, PrChecks, PrMergeStrategy } from '../api/types.ts';
@@ -251,6 +254,15 @@ function PrDetailView({ repoId, prNumber }: { repoId: string; prNumber: number }
     repoId,
     pr?.state !== 'merged' ? pr?.source_branch : undefined,
   );
+
+  // LLM AI Review
+  const { data: llmConfig } = useLlmConfig(repoId);
+  const llmReviewEnabled = (!!llmConfig?.server_enabled || !!llmConfig?.base_url) && (llmConfig?.enabled_features?.pr_review ?? true);
+  const aiReviewStreamFn = useCallback(
+    (signal: AbortSignal) => streamPrReview(repoId, prNumber, signal),
+    [repoId, prNumber],
+  );
+  const aiReview = useLlmStream(aiReviewStreamFn);
 
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
@@ -635,6 +647,20 @@ function PrDetailView({ repoId, prNumber }: { repoId: string; prNumber: number }
           approvalCount={approvalCount}
           ciPassing={ciPassing}
         />
+      )}
+
+      {/* AI Review */}
+      {llmReviewEnabled && (
+        <div className="px-4 pt-2">
+          <LlmPanel
+            title="AI Code Review"
+            content={aiReview.content}
+            isStreaming={aiReview.isStreaming}
+            error={aiReview.error}
+            onGenerate={aiReview.start}
+            onCancel={aiReview.cancel}
+          />
+        </div>
       )}
 
       {/* Reviews & Comments */}

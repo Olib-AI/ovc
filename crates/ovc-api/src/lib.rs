@@ -18,6 +18,12 @@
 //!     cors_origins: Vec::new(),
 //!     workdir_map: Vec::new(),
 //!     workdir_scan: Vec::new(),
+//!     llm_base_url: None,
+//!     llm_model: None,
+//!     llm_api_key: None,
+//!     llm_enabled: false,
+//!     llm_max_tokens: 8192,
+//!     llm_timeout_secs: 120,
 //! };
 //! ovc_api::start_server(config).await?;
 //! # Ok(())
@@ -56,6 +62,18 @@ pub struct ServerConfig {
     pub workdir_map: Vec<(String, PathBuf)>,
     /// Directories to scan for `.ovc-link` files (auto-discover workdirs).
     pub workdir_scan: Vec<PathBuf>,
+    /// Base URL for the local LLM server (e.g., `http://localhost:11434`).
+    pub llm_base_url: Option<String>,
+    /// Model name for LLM completions (e.g., `llama3`).
+    pub llm_model: Option<String>,
+    /// API key for the LLM server (most local servers ignore this).
+    pub llm_api_key: Option<String>,
+    /// Whether LLM features are enabled.
+    pub llm_enabled: bool,
+    /// Maximum approximate token count for LLM context.
+    pub llm_max_tokens: usize,
+    /// LLM request timeout in seconds.
+    pub llm_timeout_secs: u64,
 }
 
 /// Starts the OVC API server with the given configuration.
@@ -68,7 +86,19 @@ pub async fn start_server(
         Some(s) => s,
         None => load_or_create_persisted_secret(&config.repos_dir)?,
     };
-    let state = Arc::new(AppState::new(config.repos_dir, jwt_secret));
+    let llm_server_config = Arc::new(ovc_llm::LlmServerConfig {
+        base_url: config.llm_base_url,
+        model: config.llm_model,
+        api_key: config.llm_api_key,
+        enabled: config.llm_enabled,
+        max_context_tokens: config.llm_max_tokens,
+        request_timeout_secs: config.llm_timeout_secs,
+    });
+    let state = Arc::new(AppState::new(
+        config.repos_dir,
+        jwt_secret,
+        llm_server_config,
+    ));
 
     // Register explicit workdir mappings from config.
     for (repo_id, workdir) in &config.workdir_map {
@@ -315,6 +345,7 @@ mod tests {
         let app = Arc::new(AppState::new(
             dir.to_path_buf(),
             "test-secret-key-for-jwt".to_owned(),
+            Arc::new(ovc_llm::LlmServerConfig::default()),
         ));
         build_router(app, &[])
     }

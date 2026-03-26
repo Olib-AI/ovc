@@ -3,6 +3,8 @@ import type { DiffResponse, FileDiff, DiffHunk } from '../api/types.ts';
 import { ChevronDown, ChevronRight, Plus, Minus, Columns2, Rows3, FoldVertical, UnfoldVertical, Clipboard, List, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { UnifiedHunkBlock, SplitHunkBlock } from './DiffHunkBlocks.tsx';
 import * as api from '../api/client.ts';
+import LlmPanel from './LlmPanel.tsx';
+import { useLlmStream, useLlmConfig } from '../hooks/useLlm.ts';
 
 type ViewMode = 'unified' | 'split';
 
@@ -67,6 +69,15 @@ function DiffViewer({ diff, repoId, commitId }: DiffViewerProps) {
     }
     return parts.join('\n');
   }, [diff]);
+
+  // LLM explain diff
+  const { data: llmConfig } = useLlmConfig(repoId);
+  const llmExplainEnabled = !!repoId && (!!llmConfig?.server_enabled || !!llmConfig?.base_url) && (llmConfig?.enabled_features?.explain_diff ?? true);
+  const explainStreamFn = useCallback(
+    (signal: AbortSignal) => api.streamExplainDiff(repoId!, rawDiffText, signal),
+    [repoId, rawDiffText],
+  );
+  const explain = useLlmStream(explainStreamFn);
 
   const tocEntries = useMemo((): FileTocEntry[] => {
     return diff.files.map((file) => {
@@ -220,6 +231,20 @@ function DiffViewer({ diff, repoId, commitId }: DiffViewerProps) {
             </div>
           </div>
         </div>
+
+        {/* LLM Explain Diff */}
+        {llmExplainEnabled && (
+          <div className="px-4 py-3">
+            <LlmPanel
+              title="Explain Changes"
+              content={explain.content}
+              isStreaming={explain.isStreaming}
+              error={explain.error}
+              onGenerate={explain.start}
+              onCancel={explain.cancel}
+            />
+          </div>
+        )}
 
         {/* File diffs */}
         <div className="flex-1 overflow-y-auto">

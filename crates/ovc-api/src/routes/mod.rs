@@ -9,6 +9,7 @@ pub mod commits;
 pub mod docs;
 pub mod files;
 pub mod health;
+pub mod llm;
 pub mod notes;
 pub mod pulls;
 pub mod remotes;
@@ -159,7 +160,8 @@ pub fn build_router(state: Arc<AppState>, cors_origins: &[String]) -> Router {
         .route("/auth/key-auth", post(auth::key_auth))
         .route("/docs", get(docs::get_docs_index))
         .route("/docs/search", get(docs::search_docs))
-        .route("/docs/{category}/{section}", get(docs::get_doc_section));
+        .route("/docs/{category}/{section}", get(docs::get_doc_section))
+        .route("/llm/health", get(llm::llm_health));
 
     let repo_routes = Router::new()
         .route("/", get(repos::list_repos).post(repos::create_repo))
@@ -355,6 +357,21 @@ pub fn build_router(state: Arc<AppState>, cors_origins: &[String]) -> Router {
         .route(
             "/{id}/dependencies/proposals/{branch}/create-pr",
             post(actions::create_pr_from_proposal),
+        )
+        // LLM-powered features
+        .route(
+            "/{id}/llm/config",
+            get(llm::get_llm_config).put(llm::put_llm_config),
+        )
+        .route(
+            "/{id}/llm/generate-commit-msg",
+            post(llm::generate_commit_message),
+        )
+        .route("/{id}/llm/review-pr/{pr_number}", post(llm::review_pr))
+        .route("/{id}/llm/explain-diff", post(llm::explain_diff))
+        .route(
+            "/{id}/llm/generate-pr-description/{pr_number}",
+            post(llm::generate_pr_description),
         );
 
     let origins: Vec<axum::http::HeaderValue> = if cors_origins.is_empty() {

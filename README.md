@@ -6,7 +6,7 @@
   <strong>Secure, self-hosted version control — encrypted single-file repositories you can store anywhere.</strong>
 </p>
 <p align="center">
-  Every commit, branch, tag, and file history lives in a single encrypted <code>.ovc</code> blob — Ed25519+X25519 key pair encryption, commit signing & verification, full Git interop, cloud sync via any storage provider, a built-in CI/CD actions engine with 28 built-in checks, and a premium web UI — all in a <strong>single 22 MB binary</strong>.
+  Every commit, branch, tag, and file history lives in a single encrypted <code>.ovc</code> blob — Ed25519+X25519 key pair encryption, commit signing & verification, full Git interop, cloud sync via any storage provider, a built-in CI/CD actions engine with 28 built-in checks, local LLM integration for AI-powered commit messages, code review, and diff explanation — plus a premium web UI — all in a <strong>single binary</strong>.
 </p>
 <p align="center">
   Built by <a href="https://www.olib.ai">Olib AI</a>
@@ -36,8 +36,9 @@ Modern teams need version control they fully own — without giving up the conve
 - **Cloud sync** — content-defined chunking via FastCDC; only changed parts transfer; supports local, GCS, and extensible backends
 - **Git-compatible** — bidirectional import/export with full history fidelity
 - **Built-in Actions Engine** — 28 built-in checks + custom shell commands, parallel execution with DAG dependencies, matrix strategy, secrets vault, retry logic
+- **Local LLM integration** — AI-powered commit messages, PR review, diff explanation, and PR descriptions via any OpenAI-compatible local model (Ollama, LM Studio); multi-pass map-reduce pipeline handles diffs of any size
 - **Premium web UI** — commit graph with SVG lanes, split diff viewer, blame view, code search, command palette, commit actions, toast notifications
-- **Single binary** — VCS + crypto + git bridge + cloud sync + actions engine + web server + React UI
+- **Single binary** — VCS + crypto + git bridge + cloud sync + actions engine + LLM integration + web server + React UI
 - **Access control (RBAC)** — per-user roles (read, write, admin, owner) with branch protection
 - **Memory-safe** — `unsafe_code = "forbid"` workspace-wide; keys zeroed on drop via `zeroize`
 - **Security-hardened** — constant-time auth, secret zeroization, path traversal protection, bounded resource allocation
@@ -274,6 +275,12 @@ Features: commit graph with SVG lanes, split/unified diff viewer, blame view, co
 | `OVC_REPOS_DIR` | API server repos directory |
 | `OVC_CORS_ORIGINS` | Allowed CORS origins for API |
 | `OVC_WORKDIR_MAP` | Map repo IDs to working directories for the API server |
+| `OVC_LLM_ENABLED` | Enable LLM-powered features at the server level |
+| `OVC_LLM_BASE_URL` | Base URL of the OpenAI-compatible LLM server (e.g., `http://localhost:1234`) |
+| `OVC_LLM_MODEL` | Model name for LLM completions (e.g., `llama3`, `qwen3.5`) |
+| `OVC_LLM_API_KEY` | API key for the LLM server (most local servers don't require this) |
+| `OVC_LLM_MAX_TOKENS` | Maximum context tokens for LLM requests (default: 32768) |
+| `OVC_LLM_TIMEOUT` | LLM request timeout in seconds (default: 120) |
 
 ---
 
@@ -560,6 +567,50 @@ The web UI is embedded in the binary — no Node.js required in production.
 
 ---
 
+## Local LLM Integration
+
+OVC integrates with any OpenAI-compatible local LLM server (Ollama, LM Studio, vLLM, llama.cpp) to provide AI-powered features directly in the web UI:
+
+- **Commit message generation** — analyzes staged changes and generates a concise commit message
+- **PR code review** — reviews pull request diffs with actionable feedback
+- **Diff explanation** — explains code changes in plain English
+- **PR description generation** — creates a PR description from commits and diffs
+
+### Multi-pass pipeline for large diffs
+
+When a diff exceeds the model's context window, OVC automatically splits it into batches using a map-reduce pipeline:
+
+1. **Partition** — files are sorted by priority (source code first) and packed into batches that fit the token budget
+2. **Map** — each batch is sent to the LLM for a short bullet-point summary
+3. **Reduce** — all summaries + a file manifest are combined in a final request
+
+This ensures every file is analyzed regardless of diff size. Progress is streamed to the UI in real-time ("Analyzing 1/3...", "Analyzing 2/3...", "Generating...").
+
+### Configuration
+
+Configure LLM via environment variables, CLI flags, or the per-repo settings page in the web UI:
+
+```bash
+# Server-level (env vars or CLI flags)
+ovc serve --port 9742 --llm-enabled --llm-base-url http://localhost:1234
+
+# Per-repo (web UI Settings page)
+# Set base URL, model, temperature, context tokens, and per-feature toggles
+```
+
+Binary files are automatically detected and excluded. Lock files, generated code, and build artifacts are filtered out. Token estimation uses a conservative ratio with safety margins to avoid exceeding the model's context window.
+
+### Supported models
+
+Any model served via an OpenAI-compatible `/v1/chat/completions` endpoint, including:
+- Ollama (llama3, codestral, deepseek-coder, etc.)
+- LM Studio (Qwen, Mistral, Phi, etc.)
+- vLLM, llama.cpp server, LocalAI, text-generation-webui
+
+Thinking models (Qwen 3.5, DeepSeek-R1) are supported — chain-of-thought reasoning is silently discarded, only the final answer is shown.
+
+---
+
 ## Architecture
 
 ```
@@ -569,6 +620,7 @@ crates/
   ovc-cloud/      Cloud sync — FastCDC chunking, storage backends (local, GCS)
   ovc-api/        REST API server — Axum-based, embedded React UI
   ovc-actions/    Actions/CI engine — 28 built-in checks, DAG scheduler, Docker
+  ovc-llm/        Local LLM integration — multi-pass context builder, SSE streaming
   ovc-cli/        CLI — 47 commands, Clap-based
   ovc-remote-helper/  Git remote helper (stub for future git clone ovc:// support)
 

@@ -864,6 +864,7 @@ function RepoPage() {
                   defaultAuthorName={lastAuthor?.name}
                   defaultAuthorEmail={lastAuthor?.email}
                   lastCommitMessage={log?.commits[0]?.message}
+                  repoId={repoId}
                 />
               </div>
             ) : (

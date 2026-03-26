@@ -114,7 +114,7 @@ function MergeSplitButton({ mergeable, isMerging, branchName, baseName, onMerge 
   );
 }
 
-function PullRequestView({ data, onMerge, isMerging }: PullRequestViewProps) {
+function PullRequestView({ data, repoId, onMerge, isMerging }: PullRequestViewProps) {
   const [commitsOpen, setCommitsOpen] = useState(true);
 
   return (
@@ -260,7 +260,7 @@ function PullRequestView({ data, onMerge, isMerging }: PullRequestViewProps) {
               </div>
             </div>
           </div>
-          <DiffViewer diff={data.diff} />
+          <DiffViewer diff={data.diff} repoId={repoId} />
         </section>
       </div>
     </div>

@@ -75,6 +75,10 @@ import type {
   UpdatePullRequestPayload,
   UpdateRepoConfigPayload,
   UserAccessInfo,
+  LlmConfigResponse,
+  LlmHealthResponse,
+  LlmDescriptionResponse,
+  UpdateLlmConfigPayload,
 } from './types.ts';
 
 const api = axios.create({
@@ -1005,4 +1009,122 @@ export async function getAuthChallenge(): Promise<ChallengeResponse> {
 export async function keyAuth(payload: KeyAuthPayload): Promise<TokenResponse> {
   const { data } = await api.post<TokenResponse>('/auth/key-auth', payload);
   return data;
+}
+
+// LLM Integration
+
+export async function getLlmConfig(repoId: string): Promise<LlmConfigResponse> {
+  const { data } = await api.get<LlmConfigResponse>(`/repos/${repoId}/llm/config`);
+  return data;
+}
+
+export async function updateLlmConfig(
+  repoId: string,
+  payload: UpdateLlmConfigPayload,
+): Promise<LlmConfigResponse> {
+  const { data } = await api.put<LlmConfigResponse>(`/repos/${repoId}/llm/config`, payload);
+  return data;
+}
+
+export async function getLlmHealth(repoId?: string): Promise<LlmHealthResponse> {
+  const params = repoId ? { repo_id: repoId } : {};
+  const { data } = await api.get<LlmHealthResponse>('/llm/health', { params });
+  return data;
+}
+
+export async function generatePrDescription(
+  repoId: string,
+  prNumber: number,
+): Promise<LlmDescriptionResponse> {
+  const { data } = await api.post<LlmDescriptionResponse>(
+    `/repos/${repoId}/llm/generate-pr-description/${prNumber}`,
+  );
+  return data;
+}
+
+/**
+ * Creates an async generator that streams SSE events from an LLM endpoint.
+ * Uses native fetch for streaming (axios buffers responses).
+ */
+export async function* streamLlmResponse(
+  path: string,
+  body?: Record<string, unknown>,
+  signal?: AbortSignal,
+): AsyncGenerator<string, void, unknown> {
+  const token = localStorage.getItem('ovc_token');
+  const response = await fetch(`/api/v1${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+    signal,
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => response.statusText);
+    throw new Error(`LLM request failed (${response.status}): ${errorBody}`);
+  }
+
+  if (!response.body) return;
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let currentEventType: string | null = null;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed === '') {
+          // Empty line resets event type per SSE spec.
+          currentEventType = null;
+          continue;
+        }
+        if (trimmed.startsWith('event: ')) {
+          currentEventType = trimmed.slice(7);
+          if (currentEventType === 'done') {
+            return;
+          }
+          continue;
+        }
+        if (trimmed.startsWith('data: ')) {
+          const data = trimmed.slice(6);
+          if (currentEventType === 'error') {
+            throw new Error(data || 'LLM stream error');
+          }
+          // Progress events are yielded with a special prefix so the
+          // consumer can distinguish them from content deltas.
+          if (currentEventType === 'progress') {
+            if (data) yield `\x00progress:${data}`;
+            continue;
+          }
+          if (data) yield data;
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+export function streamCommitMessage(repoId: string, signal?: AbortSignal) {
+  return streamLlmResponse(`/repos/${repoId}/llm/generate-commit-msg`, undefined, signal);
+}
+
+export function streamPrReview(repoId: string, prNumber: number, signal?: AbortSignal) {
+  return streamLlmResponse(`/repos/${repoId}/llm/review-pr/${prNumber}`, undefined, signal);
+}
+
+export function streamExplainDiff(repoId: string, diff: string, signal?: AbortSignal) {
+  return streamLlmResponse(`/repos/${repoId}/llm/explain-diff`, { diff }, signal);
 }

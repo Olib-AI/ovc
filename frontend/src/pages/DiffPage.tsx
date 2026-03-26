@@ -184,7 +184,7 @@ function DiffPage() {
             {isLoading ? (
               <DiffSkeleton />
             ) : activeDiff && activeDiff.files.length > 0 ? (
-              <DiffViewer diff={activeDiff} />
+              <DiffViewer diff={activeDiff} repoId={repoId} />
             ) : !isLoading && (
               <div className="flex h-full items-center justify-center text-text-muted">
                 <p className="text-sm">

@@ -842,7 +842,9 @@ fn commit_touched_path(
 }
 
 /// Computes the diff between HEAD tree and the current index.
-fn compute_index_diff(repo: &ovc_core::repository::Repository) -> Result<DiffResponse, ApiError> {
+pub fn compute_index_diff(
+    repo: &ovc_core::repository::Repository,
+) -> Result<DiffResponse, ApiError> {
     let head_tree_oid = repo.ref_store().resolve_head().ok().and_then(|commit_oid| {
         repo.get_object(&commit_oid).ok().flatten().and_then(|obj| {
             if let ovc_core::object::Object::Commit(c) = obj {

@@ -42,6 +42,12 @@ pub fn execute(args: &ServeArgs) -> Result<()> {
             cors_origins: args.cors_origin.clone(),
             workdir_map,
             workdir_scan,
+            llm_base_url: args.llm_base_url.clone(),
+            llm_model: args.llm_model.clone(),
+            llm_api_key: args.llm_api_key.clone(),
+            llm_enabled: args.llm_enabled,
+            llm_max_tokens: args.llm_max_tokens,
+            llm_timeout_secs: args.llm_timeout_secs,
         };
         ovc_api::start_server(config)
             .await

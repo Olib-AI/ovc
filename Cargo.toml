@@ -6,13 +6,14 @@ members = [
     "crates/ovc-api",
     "crates/ovc-actions",
     "crates/ovc-cli",
+    "crates/ovc-llm",
     "crates/ovc-remote-helper",
 ]
 resolver = "3"
 
 [workspace.package]
 edition = "2024"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Olib AI <dev@olib.ai>"]
 license = "MIT"
 repository = "https://github.com/Olib-AI/ovc"
@@ -66,7 +67,7 @@ futures = "0.3"
 tokio = { version = "1", features = ["full"] }
 async-trait = "0.1"
 bytes = "1"
-reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+reqwest = { version = "0.12", features = ["json", "rustls-tls", "stream"], default-features = false }
 sha2 = "0.10"
 uuid = { version = "1", features = ["v4"] }
 
@@ -97,6 +98,7 @@ ovc-git = { path = "crates/ovc-git" }
 ovc-cloud = { path = "crates/ovc-cloud" }
 ovc-api = { path = "crates/ovc-api" }
 ovc-actions = { path = "crates/ovc-actions" }
+ovc-llm = { path = "crates/ovc-llm" }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

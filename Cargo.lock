@@ -1691,7 +1691,7 @@ checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
 
 [[package]]
 name = "ovc-actions"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "argon2",
  "base64",
@@ -1716,7 +1716,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-api"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "axum",
  "base64",
@@ -1724,6 +1724,7 @@ dependencies = [
  "clap",
  "ed25519-dalek",
  "flate2",
+ "futures",
  "hmac",
  "http-body-util",
  "jsonwebtoken",
@@ -1731,6 +1732,7 @@ dependencies = [
  "ovc-actions",
  "ovc-cloud",
  "ovc-core",
+ "ovc-llm",
  "rand 0.8.5",
  "rust-embed",
  "serde",
@@ -1752,7 +1754,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-cli"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -1783,7 +1785,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-cloud"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "async-trait",
  "bytes",
@@ -1803,7 +1805,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-core"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "argon2",
  "base64",
@@ -1830,7 +1832,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-git"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "flate2",
  "hex",
@@ -1844,8 +1846,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "ovc-llm"
+version = "0.1.5"
+dependencies = [
+ "bytes",
+ "futures",
+ "ovc-core",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "ovc-remote-helper"
-version = "0.1.4"
+version = "0.1.5"
 
 [[package]]
 name = "p256"
@@ -2283,6 +2300,7 @@ dependencies = [
  "base64",
  "bytes",
  "futures-core",
+ "futures-util",
  "http",
  "http-body",
  "http-body-util",
@@ -2302,12 +2320,14 @@ dependencies = [
  "sync_wrapper",
  "tokio",
  "tokio-rustls",
+ "tokio-util",
  "tower",
  "tower-http",
  "tower-service",
  "url",
  "wasm-bindgen",
  "wasm-bindgen-futures",
+ "wasm-streams",
  "web-sys",
  "webpki-roots",
 ]
@@ -3306,6 +3326,19 @@ dependencies = [
  "indexmap",
  "wasm-encoder",
  "wasmparser",
+]
+
+[[package]]
+name = "wasm-streams"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "15053d8d85c7eccdbefef60f06769760a563c7f0a9d6902a13d35c7800b0ad65"
+dependencies = [
+ "futures-util",
+ "js-sys",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
 ]
 
 [[package]]

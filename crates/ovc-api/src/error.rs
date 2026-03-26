@@ -87,6 +87,16 @@ impl ApiError {
         }
     }
 
+    /// Creates a 503 Service Unavailable error.
+    #[must_use]
+    pub fn service_unavailable(message: &str) -> Self {
+        Self {
+            code: "SERVICE_UNAVAILABLE".to_owned(),
+            message: message.to_owned(),
+            status: StatusCode::SERVICE_UNAVAILABLE,
+        }
+    }
+
     /// Creates a 500 Internal Server Error.
     #[must_use]
     pub fn internal(message: &str) -> Self {
