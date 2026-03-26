@@ -96,8 +96,10 @@ struct StreamChoice {
 struct StreamChoiceDelta {
     #[serde(default)]
     content: Option<String>,
-    /// Reasoning/thinking content emitted by thinking models (e.g. Qwen, DeepSeek-R1).
+    /// Present in SSE deltas from thinking models — must be accepted by serde
+    /// even though we discard it (only `content` is used).
     #[serde(default)]
+    #[allow(dead_code)]
     reasoning_content: Option<String>,
 }
 
