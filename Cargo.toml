@@ -37,7 +37,7 @@ flate2 = "1"
 
 # Hashing
 sha1 = "0.11"
-hmac = "0.12"
+hmac = "0.13"
 
 # Asymmetric cryptography
 ed25519-dalek = { version = "2", features = ["rand_core"] }
