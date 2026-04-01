@@ -884,9 +884,10 @@ function RepoPage() {
             />
           ) : (
             <FileViewer
-              repoId={repoId!}
-              filePath={selectedFile}
-              browseRef={browseRef ?? undefined}
+               key={selectedFile ?? 'empty'}
+               repoId={repoId!}
+               filePath={selectedFile}
+               browseRef={browseRef ?? undefined}
               highlightLine={highlightLine}
               initialShowHistory={fileHistoryRequested}
               onFileDeleted={() => setSelectedFile(null)}

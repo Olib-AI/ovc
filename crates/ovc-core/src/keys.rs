@@ -762,7 +762,7 @@ fn compute_fingerprint(ed: &ed25519_dalek::VerifyingKey, x: &X25519PublicKey) ->
 /// construction, which lacked the extract phase needed to handle the non-uniform
 /// distribution of X25519 shared secrets.
 fn derive_seal_key(shared_secret: &[u8; 32], ephemeral_public: &[u8]) -> Zeroizing<[u8; 32]> {
-    use hmac::{Hmac, Mac};
+    use hmac::{Hmac, KeyInit, Mac};
 
     type HmacSha256 = Hmac<Sha256>;
 

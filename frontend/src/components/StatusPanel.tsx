@@ -540,8 +540,8 @@ function StatusPanel({
 }
 
 function StatusBadge({ status }: { status: string }) {
-  let colorClass = '';
-  let label = '';
+  let colorClass: string;
+  let label: string;
 
   switch (status) {
     case 'added':

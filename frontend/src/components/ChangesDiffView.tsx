@@ -174,8 +174,8 @@ function ChangesDiffView({ stagedDiff, unstagedDiff, selectedFile, isLoading }: 
 }
 
 function FileDiffBadge({ status }: { status: string }) {
-  let colorClass = '';
-  let label = '';
+  let colorClass: string;
+  let label: string;
 
   switch (status) {
     case 'added':

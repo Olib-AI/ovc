@@ -234,8 +234,8 @@ function SyncPanel({
 }
 
 function SyncStatusBadge({ status }: { status: string }) {
-  let className = '';
-  let label = '';
+  let className: string;
+  let label: string;
 
   switch (status) {
     case 'in_sync':

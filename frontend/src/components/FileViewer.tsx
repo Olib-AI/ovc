@@ -106,23 +106,6 @@ function FileViewer({ repoId, filePath, browseRef, highlightLine, initialShowHis
     }
   }, [highlightLine, data]);
 
-  // Reset image viewer state when the file changes. The setState calls inside this
-  // effect are an accepted derived-state-reset pattern per the React docs.
-  // initialShowHistory is intentionally excluded from the dep array — it seeds
-  // the history panel state on filePath change but must not re-trigger when the
-  // parent toggles the prop independently after mount.
-  useEffect(() => {
-    setImageZoom(100);
-    setImageDimensions(null);
-    setViewMode('preview');
-    setShowHistory(initialShowHistory);
-    setIsEditing(false);
-    setEditContent('');
-    setShowDeleteConfirm(false);
-    setVisibleLineCap(LINE_CAP);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filePath]);
-
   const ext = filePath ? getExtension(filePath) : '';
   const isMarkdown = MARKDOWN_EXTENSIONS.has(ext);
   const isImage = IMAGE_EXTENSIONS.has(ext);

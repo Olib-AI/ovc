@@ -147,11 +147,11 @@ function DocsPage() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<string | null>(() => {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get('category');
   });
-  const [activeSection, setActiveSection] = useState<string | null>(() => {
+  const [selectedSection, setSelectedSection] = useState<string | null>(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get('section');
   });
@@ -161,6 +161,11 @@ function DocsPage() {
   const initializedRef = useRef(false);
 
   const { data: docsIndex, isLoading: indexLoading, error: indexError } = useDocsIndex();
+
+  // Derived active category/section
+  const activeCategory = selectedCategory || (docsIndex?.categories[0]?.id ?? null);
+  const activeSection = selectedSection || (docsIndex?.categories[0]?.sections[0]?.id ?? null);
+
   const { data: searchResults, isLoading: searchLoading } = useDocSearch(debouncedQuery);
   const { data: sectionData, isLoading: sectionLoading } = useDocSection(
     activeCategory,
@@ -173,25 +178,12 @@ function DocsPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Auto-expand all categories and select first section on initial load
+  // Auto-expand all categories on initial load
   useEffect(() => {
     if (!docsIndex?.categories || initializedRef.current) return;
     initializedRef.current = true;
 
     setExpandedCategories(new Set(docsIndex.categories.map((c) => c.id)));
-
-    // Select first section if none selected (URL params already handled via initializer)
-    if (!activeCategory && !activeSection && docsIndex.categories.length > 0) {
-      const firstCat = docsIndex.categories[0];
-      if (firstCat && firstCat.sections.length > 0) {
-        const firstSection = firstCat.sections[0];
-        if (firstSection) {
-          setActiveCategory(firstCat.id);
-          setActiveSection(firstSection.id);
-        }
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [docsIndex]);
 
   // Focus search on '/' key
@@ -213,8 +205,8 @@ function DocsPage() {
   }
 
   function handleSelectSection(categoryId: string, sectionId: string) {
-    setActiveCategory(categoryId);
-    setActiveSection(sectionId);
+    setSelectedCategory(categoryId);
+    setSelectedSection(sectionId);
     setSearchQuery('');
     setMobileSidebarOpen(false);
     // Update URL without full navigation

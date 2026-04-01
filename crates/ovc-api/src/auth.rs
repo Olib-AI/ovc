@@ -104,7 +104,7 @@ const JWT_KEY_DERIVATION_LABEL: &[u8] = b"ovc-jwt-signing-key-v1";
 /// value. The derivation is deterministic so both token creation and
 /// validation produce the same key.
 fn derive_jwt_signing_key(secret: &str) -> Vec<u8> {
-    use hmac::{Hmac, Mac};
+    use hmac::{Hmac, KeyInit, Mac};
     use sha2::Sha256;
 
     let mut mac = Hmac::<Sha256>::new_from_slice(secret.as_bytes())
