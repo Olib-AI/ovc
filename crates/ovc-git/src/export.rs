@@ -460,7 +460,7 @@ mod tests {
 
         // Set refs.
         let mut refs = BTreeMap::new();
-        refs.insert("refs/heads/main".to_owned(), commit_sha1.clone());
+        refs.insert("refs/heads/main".to_owned(), commit_sha1);
         git_refs::write_git_refs(&git_dir, &refs, "refs/heads/main").unwrap();
 
         // Import to OVC.

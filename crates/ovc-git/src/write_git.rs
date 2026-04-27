@@ -160,8 +160,8 @@ mod tests {
         let git_dir = dir.path().join(".git");
         std::fs::create_dir_all(git_dir.join("objects")).unwrap();
 
-        let sha1a = write_git_loose_object(&git_dir, "blob", b"dup").unwrap();
-        let sha1b = write_git_loose_object(&git_dir, "blob", b"dup").unwrap();
-        assert_eq!(sha1a, sha1b);
+        let sha1_first = write_git_loose_object(&git_dir, "blob", b"dup").unwrap();
+        let sha1_second = write_git_loose_object(&git_dir, "blob", b"dup").unwrap();
+        assert_eq!(sha1_first, sha1_second);
     }
 }

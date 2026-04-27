@@ -665,10 +665,11 @@ mod tests {
 
     #[test]
     fn large_diff() {
-        let old: Vec<u8> = (0..100)
-            .map(|i| format!("line {i}\n"))
-            .collect::<String>()
-            .into_bytes();
+        let mut old_s = String::new();
+        for i in 0..100 {
+            let _ = writeln!(old_s, "line {i}");
+        }
+        let old = old_s.into_bytes();
         let mut new = old.clone();
         // Insert a line at position ~50.
         let insert_pos = new.windows(7).position(|w| w == b"line 50").unwrap_or(0);
