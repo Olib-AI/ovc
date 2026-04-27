@@ -424,7 +424,7 @@ mod tests {
 
         let entries = parse_git_tree(&data).unwrap();
         assert_eq!(entries.len(), 1);
-        assert_eq!(entries[0].mode, 0o100644);
+        assert_eq!(entries[0].mode, 0o100_644);
         assert_eq!(entries[0].name, b"hello.txt");
         assert_eq!(
             hex::encode(entries[0].sha1),
