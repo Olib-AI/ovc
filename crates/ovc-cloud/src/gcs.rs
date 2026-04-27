@@ -178,8 +178,8 @@ impl StorageBackend for GcsBackend {
         let full_key = self.full_key(key);
         let encoded = Self::encode_object_name(&full_key);
 
-        let meta_url = format!("{GCS_API_BASE}/b/{}/o/{encoded}", self.bucket,);
-        let data_url = format!("{GCS_API_BASE}/b/{}/o/{encoded}?alt=media", self.bucket,);
+        let meta_url = format!("{GCS_API_BASE}/b/{}/o/{encoded}", self.bucket);
+        let data_url = format!("{GCS_API_BASE}/b/{}/o/{encoded}?alt=media", self.bucket);
 
         let mut attempt = 0u32;
         let mut delay_ms = GCS_RETRY_INITIAL_DELAY_MS;
@@ -272,7 +272,7 @@ impl StorageBackend for GcsBackend {
         let full_key = self.full_key(key);
         let encoded = Self::encode_object_name(&full_key);
 
-        let url = format!("{GCS_API_BASE}/b/{}/o/{encoded}", self.bucket,);
+        let url = format!("{GCS_API_BASE}/b/{}/o/{encoded}", self.bucket);
 
         let mut attempt = 0u32;
         let mut delay_ms = GCS_RETRY_INITIAL_DELAY_MS;
@@ -333,7 +333,7 @@ impl StorageBackend for GcsBackend {
         let full_key = self.full_key(key);
         let encoded = Self::encode_object_name(&full_key);
 
-        let url = format!("{GCS_API_BASE}/b/{}/o/{encoded}", self.bucket,);
+        let url = format!("{GCS_API_BASE}/b/{}/o/{encoded}", self.bucket);
 
         let response = self
             .client
@@ -359,7 +359,7 @@ impl StorageBackend for GcsBackend {
         let mut page_token: Option<String> = None;
 
         loop {
-            let mut url = format!("{GCS_API_BASE}/b/{}/o?prefix={}", self.bucket, &full_prefix,);
+            let mut url = format!("{GCS_API_BASE}/b/{}/o?prefix={}", self.bucket, &full_prefix);
 
             if let Some(ref token) = page_token {
                 use std::fmt::Write;
