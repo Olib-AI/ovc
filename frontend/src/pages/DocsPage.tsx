@@ -158,7 +158,7 @@ function DocsPage() {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const initializedRef = useRef(false);
+  const [initialized, setInitialized] = useState(false);
 
   const { data: docsIndex, isLoading: indexLoading, error: indexError } = useDocsIndex();
 
@@ -179,12 +179,10 @@ function DocsPage() {
   }, [searchQuery]);
 
   // Auto-expand all categories on initial load
-  useEffect(() => {
-    if (!docsIndex?.categories || initializedRef.current) return;
-    initializedRef.current = true;
-
+  if (docsIndex?.categories && !initialized) {
+    setInitialized(true);
     setExpandedCategories(new Set(docsIndex.categories.map((c) => c.id)));
-  }, [docsIndex]);
+  }
 
   // Focus search on '/' key
   const focusSearch = useCallback(() => {
