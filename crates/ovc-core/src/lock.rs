@@ -28,7 +28,7 @@ impl RepoLock {
     const RETRY_INTERVAL: Duration = Duration::from_millis(100);
 
     /// Maximum age of a lock file before it is considered stale (5 minutes).
-    const STALE_THRESHOLD: Duration = Duration::from_secs(300);
+    const STALE_THRESHOLD: Duration = Duration::from_mins(5);
 
     /// Acquires an exclusive lock on the repository at `ovc_path`.
     ///
