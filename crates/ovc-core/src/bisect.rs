@@ -222,12 +222,7 @@ mod tests {
 
         // Simulate the bisect process.
         let mut steps = 0;
-        loop {
-            let current = match state.current() {
-                Some(oid) => oid,
-                None => break,
-            };
-
+        while let Some(current) = state.current() {
             // Find which index this commit is in our original chain.
             let chain_idx = commits.iter().position(|c| *c == current);
 
@@ -274,6 +269,6 @@ mod tests {
 
         // With 14 candidates, should estimate ~4 steps (log2(14) ≈ 3.8).
         let steps = state.remaining_steps();
-        assert!(steps >= 3 && steps <= 5, "expected 3-5 steps, got {steps}");
+        assert!((3..=5).contains(&steps), "expected 3-5 steps, got {steps}");
     }
 }
