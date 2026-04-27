@@ -354,7 +354,11 @@ mod tests {
         let paths: Vec<&str> = entries.iter().map(|e| e.path.as_str()).collect();
         assert!(paths.contains(&"file.txt"));
         assert!(paths.contains(&"src/main.rs"));
-        assert!(!paths.iter().any(|p| p.ends_with(".log")));
+        assert!(!paths.iter().any(|p| {
+            std::path::Path::new(p)
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("log"))
+        }));
     }
 
     #[test]
