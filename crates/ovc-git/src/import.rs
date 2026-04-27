@@ -513,12 +513,12 @@ mod tests {
         // Write a tree containing the blob.
         let blob_sha1_bytes = hex::decode(&blob_sha1).unwrap();
         let tree_data =
-            write_git::serialize_git_tree(&[(0o100644, &blob_sha1_bytes, b"hello.txt".as_slice())]);
+            write_git::serialize_git_tree(&[(0o100_644, &blob_sha1_bytes, b"hello.txt".as_slice())]);
         let tree_sha1 = write_git::write_git_loose_object(&git_dir, "tree", &tree_data).unwrap();
 
         // Write a commit.
         let commit = git_objects::GitCommit {
-            tree: tree_sha1.clone(),
+            tree: tree_sha1,
             parents: vec![],
             author: "Test User <test@example.com> 1700000000 +0000".into(),
             committer: "Test User <test@example.com> 1700000000 +0000".into(),

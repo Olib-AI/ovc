@@ -429,6 +429,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn rebase_linear_two_commits() {
         let mut store = ObjectStore::default();
         let identity = test_identity();
