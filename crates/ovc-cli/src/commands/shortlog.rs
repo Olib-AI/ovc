@@ -42,7 +42,7 @@ pub fn execute(ctx: &CliContext, args: &ShortlogArgs) -> Result<()> {
     // Collect and optionally sort by count.
     let mut entries: Vec<(String, Vec<String>)> = by_author.into_iter().collect();
     if args.sort_by_count {
-        entries.sort_by(|a, b| b.1.len().cmp(&a.1.len()));
+        entries.sort_by_key(|entry| std::cmp::Reverse(entry.1.len()));
     }
 
     for (author, messages) in &entries {

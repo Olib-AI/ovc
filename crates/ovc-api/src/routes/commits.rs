@@ -358,10 +358,8 @@ fn resolve_author(name: &str, email: &str) -> ovc_core::object::Identity {
 /// Determines whether to sign a commit. The request-level flag overrides the
 /// `OVC_SIGN_COMMITS` environment variable.
 fn resolve_should_sign(request_flag: Option<bool>) -> bool {
-    request_flag.unwrap_or_else(|| {
-        std::env::var("OVC_SIGN_COMMITS")
-            .is_ok_and(|v| v == "true" || v == "1")
-    })
+    request_flag
+        .unwrap_or_else(|| std::env::var("OVC_SIGN_COMMITS").is_ok_and(|v| v == "true" || v == "1"))
 }
 
 /// Creates a new commit (non-amend path).

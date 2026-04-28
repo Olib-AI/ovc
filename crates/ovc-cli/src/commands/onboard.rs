@@ -331,7 +331,7 @@ fn step_key_pair(identity: &IdentityInfo) -> Result<KeyInfo> {
         let fingerprint = keypair.fingerprint().to_owned();
 
         let green = Style::new().green();
-        println!("\n  {} Using existing key pair", green.apply_to("✓"),);
+        println!("\n  {} Using existing key pair", green.apply_to("✓"));
         println!("    Fingerprint: {fingerprint}");
         println!("    Private key: {}", priv_path.display());
         println!("    Public key:  {}", pub_path.display());
@@ -1056,14 +1056,14 @@ fn print_summary(
             green.apply_to("✓"),
         );
     } else {
-        println!("  {} Daemon:      Skipped", green.apply_to("✓"),);
+        println!("  {} Daemon:      Skipped", green.apply_to("✓"));
     }
 
     let shell_config = detect_shell_config(&home);
     let config_display = display_with_tilde(&shell_config, &home);
 
     println!();
-    println!("  Added to {}:", dim.apply_to(config_display),);
+    println!("  Added to {}:", dim.apply_to(config_display));
     println!("    export OVC_KEY={}", key.key_name);
     println!("    # OVC_KEY_PASSPHRASE — set in your keychain (not written to shell config)");
     println!("    export OVC_REPOS_DIR={repos_display}");
@@ -1073,7 +1073,7 @@ fn print_summary(
     println!("    export OVC_SIGN_COMMITS=true");
 
     println!();
-    println!("  {}", bold.apply_to("Quick start:"),);
+    println!("  {}", bold.apply_to("Quick start:"));
     println!(
         "    {}",
         dim.apply_to(format!("cd {projects_display}/my-project"))
