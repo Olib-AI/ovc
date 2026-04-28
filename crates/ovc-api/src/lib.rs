@@ -135,7 +135,7 @@ pub async fn start_server(
     // requests.
     let challenge_state = Arc::clone(&state);
     tokio::spawn(async move {
-        let mut interval = tokio::time::interval(std::time::Duration::from_secs(60));
+        let mut interval = tokio::time::interval(std::time::Duration::from_mins(1));
         // Skip the immediate first tick so the map isn't locked at startup.
         interval.tick().await;
         loop {
@@ -166,7 +166,7 @@ async fn run_scheduled_actions_loop(state: Arc<AppState>) {
     use ovc_actions::config::{ActionsConfig, Trigger};
     use ovc_actions::runner::ActionRunner;
 
-    let mut interval = tokio::time::interval(std::time::Duration::from_secs(60));
+    let mut interval = tokio::time::interval(std::time::Duration::from_mins(1));
     // The first tick fires immediately — skip it so we don't run at startup.
     interval.tick().await;
 

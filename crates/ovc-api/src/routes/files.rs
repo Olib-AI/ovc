@@ -378,7 +378,7 @@ fn merge_workdir_entries(
                 size: 0,
             });
         } else if ft.is_file() {
-            let size = entry.metadata().map(|m| m.len()).unwrap_or(0);
+            let size = entry.metadata().map_or(0, |m| m.len());
             index_entries.push(FileTreeEntry {
                 name,
                 path,

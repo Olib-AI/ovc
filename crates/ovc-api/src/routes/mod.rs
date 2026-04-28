@@ -409,7 +409,7 @@ pub fn build_router(state: Arc<AppState>, cors_origins: &[String]) -> Router {
                     Method::OPTIONS,
                 ])
                 .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE])
-                .max_age(Duration::from_secs(3600)),
+                .max_age(Duration::from_hours(1)),
         )
         .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http())

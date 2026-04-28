@@ -14,7 +14,7 @@ use zeroize::Zeroizing;
 /// [`AUTH_RATE_WINDOW`]. If the counter exceeds [`AUTH_RATE_LIMIT`], further
 /// requests are rejected with 429 Too Many Requests.
 const AUTH_RATE_LIMIT: u32 = 10;
-const AUTH_RATE_WINDOW: std::time::Duration = std::time::Duration::from_secs(60);
+const AUTH_RATE_WINDOW: std::time::Duration = std::time::Duration::from_mins(1);
 
 /// A single rate-limit bucket for one IP address.
 #[derive(Debug, Clone)]

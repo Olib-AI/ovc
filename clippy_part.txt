@@ -1,0 +1,922 @@
+Clippy	UNKNOWN STEP	﻿2026-04-27T21:37:10.3960501Z Current runner version: '2.333.1'
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.3997398Z ##[group]Runner Image Provisioner
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.3998639Z Hosted Compute Agent
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.3999478Z Version: 20260213.493
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4000584Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4001985Z Build Date: 2026-02-13T00:28:41Z
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4003090Z Worker ID: {8a3c48b5-3079-4af2-89a2-e459230a84a8}
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4004437Z Azure Region: centralus
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4005336Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4007781Z ##[group]Operating System
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4008832Z Ubuntu
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4009685Z 24.04.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4010413Z LTS
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4011625Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4012243Z ##[group]Runner Image
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4012803Z Image: ubuntu-24.04
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4013373Z Version: 20260413.86.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4014544Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260413.86/images/ubuntu/Ubuntu2404-Readme.md
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4016024Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260413.86
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4016930Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4017982Z ##[group]GITHUB_TOKEN Permissions
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4019938Z Contents: read
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4020444Z Metadata: read
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4021299Z Packages: read
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4021968Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4025231Z Secret source: Actions
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4026373Z Prepare workflow directory
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4600062Z Prepare all required actions
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.4656668Z Getting action download info
+Clippy	UNKNOWN STEP	2026-04-27T21:37:10.9369933Z Download action repository 'actions/checkout@v6' (SHA:de0fac2e4500dabe0009e67214ff5f5447ce83dd)
+Clippy	UNKNOWN STEP	2026-04-27T21:37:11.0619837Z Download action repository 'actions/download-artifact@v4' (SHA:d3f86a106a0bac45b974a628896c90dbdf5c8093)
+Clippy	UNKNOWN STEP	2026-04-27T21:37:11.7379330Z Download action repository 'dtolnay/rust-toolchain@stable' (SHA:29eef336d9b2848a0b548edc03f92a220660cdb8)
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.0666863Z Download action repository 'Swatinem/rust-cache@v2' (SHA:e18b497796c12c097a38f9edb9d0641fb99eee32)
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9122969Z Complete job name: Clippy
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9790239Z ##[group]Run actions/checkout@v6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9790882Z with:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9791434Z   repository: Olib-AI/ovc
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9791919Z   token: ***
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9792159Z   ssh-strict: true
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9792390Z   ssh-user: git
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9792634Z   persist-credentials: true
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9792910Z   clean: true
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9793157Z   sparse-checkout-cone-mode: true
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9793447Z   fetch-depth: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9793687Z   fetch-tags: false
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9793924Z   show-progress: true
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9794157Z   lfs: false
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9794369Z   submodules: false
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9794658Z   set-safe-directory: true
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9795226Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9795449Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9795727Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:12.9795954Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0749688Z Syncing repository: Olib-AI/ovc
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0751912Z ##[group]Getting Git version info
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0752375Z Working directory is '/home/runner/work/ovc/ovc'
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0753006Z [command]/usr/bin/git version
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0782660Z git version 2.53.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0806352Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0822328Z Temporarily overriding HOME='/home/runner/work/_temp/0ba6ba32-adaa-443d-9d47-39ade15b9406' before making global git config changes
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0823222Z Adding repository directory to the temporary git global config as a safe directory
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0828512Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ovc/ovc
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0866485Z Deleting the contents of '/home/runner/work/ovc/ovc'
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0870550Z ##[group]Initializing the repository
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0876569Z [command]/usr/bin/git init /home/runner/work/ovc/ovc
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0982002Z hint: Using 'master' as the name for the initial branch. This default branch name
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0983833Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0985229Z hint: to use in all of your new repositories, which will suppress this warning,
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0986233Z hint: call:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0986838Z hint:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0987404Z hint: 	git config --global init.defaultBranch <name>
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0988437Z hint:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0988978Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0989706Z hint: 'development'. The just-created branch can be renamed via this command:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0990147Z hint:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0990371Z hint: 	git branch -m <name>
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0990625Z hint:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0991357Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0991946Z Initialized empty Git repository in /home/runner/work/ovc/ovc/.git/
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.0995384Z [command]/usr/bin/git remote add origin https://github.com/Olib-AI/ovc
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1029662Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1030237Z ##[group]Disabling automatic garbage collection
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1034066Z [command]/usr/bin/git config --local gc.auto 0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1065014Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1065563Z ##[group]Setting up auth
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1066671Z Removing SSH command configuration
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1073855Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1107128Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1393836Z Removing HTTP extra header
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1399183Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1429919Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1645186Z Removing includeIf entries pointing to credentials config files
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1652015Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1682771Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1904726Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-e1f648d2-79f4-4604-b61b-65f3a21ddc48.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1942251Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/ovc/ovc/.git.path /home/runner/work/_temp/git-credentials-e1f648d2-79f4-4604-b61b-65f3a21ddc48.config
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.1972391Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/ovc/ovc/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-e1f648d2-79f4-4604-b61b-65f3a21ddc48.config
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.2003964Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-e1f648d2-79f4-4604-b61b-65f3a21ddc48.config
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.2035302Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-e1f648d2-79f4-4604-b61b-65f3a21ddc48.config
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.2061843Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.2062631Z ##[group]Fetching the repository
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.2072579Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +7143d75b5f6f8da2092ed1e740facecad9bed65c:refs/remotes/origin/main
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.8527613Z From https://github.com/Olib-AI/ovc
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.8538068Z  * [new ref]         7143d75b5f6f8da2092ed1e740facecad9bed65c -> origin/main
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.8572919Z [command]/usr/bin/git branch --list --remote origin/main
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.8602866Z   origin/main
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.8613482Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.8640729Z 7143d75b5f6f8da2092ed1e740facecad9bed65c
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.8651809Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.8652626Z ##[group]Determining the checkout info
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.8653386Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.8653877Z [command]/usr/bin/git sparse-checkout disable
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.8698350Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.8736503Z ##[group]Checking out the ref
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.8737008Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9109996Z Switched to a new branch 'main'
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9112689Z branch 'main' set up to track 'origin/main'.
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9120471Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9171748Z [command]/usr/bin/git log -1 --format=%H
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9192209Z 7143d75b5f6f8da2092ed1e740facecad9bed65c
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9415991Z ##[group]Run actions/download-artifact@v4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9416317Z with:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9416500Z   name: frontend-dist
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9416709Z   path: frontend/dist/
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9416926Z   merge-multiple: false
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9417148Z   repository: Olib-AI/ovc
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9417354Z   run-id: 25020867327
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9417529Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9417691Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9417903Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:13.9418077Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.1407702Z Downloading single artifact
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.3244766Z Preparing to download the following artifacts:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.3246012Z - frontend-dist (ID: 6671480509, Size: 297690, Expected Digest: sha256:b410890ac2df040931a686da8e0b2294cbe2be9f6d08ef0eb96404daacc10cbd)
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.4485581Z Redirecting to blob download url: https://productionresultssa14.blob.core.windows.net/actions-results/b0e6ae19-8aa1-44ca-84cb-8f9db3cd42f3/workflow-job-run-c0bcd573-356e-556c-9e41-ccce144e5f79/artifacts/f3a918e98d3e1bd24ff7789f715913d1e23ac11f0efa875caa55a923ea0c0765.zip
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.4487008Z Starting download of artifact to: /home/runner/work/ovc/ovc/frontend/dist
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.6160692Z (node:2311) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.6162770Z (Use `node --trace-deprecation ...` to show where the warning was created)
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.7673382Z SHA256 digest of downloaded artifact is b410890ac2df040931a686da8e0b2294cbe2be9f6d08ef0eb96404daacc10cbd
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.7674438Z Artifact download completed successfully.
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.7674918Z Total of 1 artifact(s) downloaded
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.7683874Z Download artifact has finished successfully
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.7947914Z ##[group]Run dtolnay/rust-toolchain@stable
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.7948246Z with:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.7948423Z   components: clippy
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.7948631Z   toolchain: stable
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.7948819Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.7948984Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.7949198Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.7949383Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8067378Z ##[group]Run : parse toolchain version
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8067758Z [36;1m: parse toolchain version[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8068037Z [36;1mif [[ -z $toolchain ]]; then[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8068565Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8069123Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8069409Z [36;1m  exit 1[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8069727Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8070366Z [36;1m  if [[ Linux == macOS ]]; then[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8070890Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8071797Z [36;1m  else[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8072190Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8072647Z [36;1m  fi[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8072926Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8073434Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8073878Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8074378Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8074855Z [36;1melse[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8075090Z [36;1m  echo "toolchain=$toolchain" >> $GITHUB_OUTPUT[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8075367Z [36;1mfi[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8099664Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8100084Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8100259Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8100477Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8100661Z   toolchain: stable
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8100839Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8232651Z ##[group]Run : construct rustup command line
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8233005Z [36;1m: construct rustup command line[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8233451Z [36;1mecho "targets=$(for t in ${targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8234078Z [36;1mecho "components=$(for c in ${components//,/ }; do echo -n ' --component' $c; done)" >> $GITHUB_OUTPUT[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8234554Z [36;1mecho "downgrade=" >> $GITHUB_OUTPUT[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8254273Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8254622Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8254797Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8255011Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8255199Z   targets: 
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8255364Z   components: clippy
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8255554Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8327251Z ##[group]Run : set $CARGO_HOME
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8327510Z [36;1m: set $CARGO_HOME[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8327819Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8346765Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8347090Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8347261Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8347475Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8347662Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8414478Z ##[group]Run : install rustup if needed
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8414779Z [36;1m: install rustup if needed[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8415069Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8416018Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8416767Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8417027Z [36;1mfi[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8435885Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8436223Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8436467Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8436681Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8436879Z   CARGO_HOME: /home/runner/.cargo
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8437108Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8504699Z ##[group]Run rustup toolchain install stable --component clippy --profile minimal --no-self-update
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8505350Z [36;1mrustup toolchain install stable --component clippy --profile minimal --no-self-update[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8524684Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8525109Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8525376Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8525765Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8525974Z   CARGO_HOME: /home/runner/.cargo
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8526379Z   RUSTUP_PERMIT_COPY_RENAME: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:14.8526601Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:15.0110233Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+Clippy	UNKNOWN STEP	2026-04-27T21:37:15.2478895Z info: latest update on 2026-04-16 for version 1.95.0 (59807616e 2026-04-14)
+Clippy	UNKNOWN STEP	2026-04-27T21:37:15.2694197Z info: removing previous version of component clippy
+Clippy	UNKNOWN STEP	2026-04-27T21:37:15.2828176Z info: removing previous version of component rustfmt
+Clippy	UNKNOWN STEP	2026-04-27T21:37:15.2839834Z info: removing previous version of component cargo
+Clippy	UNKNOWN STEP	2026-04-27T21:37:15.2933907Z info: removing previous version of component rust-std
+Clippy	UNKNOWN STEP	2026-04-27T21:37:15.3022169Z info: removing previous version of component rustc
+Clippy	UNKNOWN STEP	2026-04-27T21:37:15.3077989Z info: downloading 5 components
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6077047Z 
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6158289Z   stable-x86_64-unknown-linux-gnu updated - rustc 1.95.0 (59807616e 2026-04-14) (from rustc 1.94.1 (e408947bf 2026-03-25))
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6158824Z 
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6230618Z ##[group]Run rustup default stable
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6231273Z [36;1mrustup default stable[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6252128Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6252465Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6252668Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6252900Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6253095Z   CARGO_HOME: /home/runner/.cargo
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6253323Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6345137Z info: using existing install for stable-x86_64-unknown-linux-gnu
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6352254Z info: default toolchain set to stable-x86_64-unknown-linux-gnu
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6352695Z 
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6420024Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.95.0 (59807616e 2026-04-14)
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6420633Z 
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6454986Z ##[group]Run : create cachekey
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6455261Z [36;1m: create cachekey[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6455777Z [36;1mDATE=$(rustc +stable --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6456449Z [36;1mHASH=$(rustc +stable --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6456935Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6477746Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6478101Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6478290Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6478510Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6478707Z   CARGO_HOME: /home/runner/.cargo
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6478934Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6812627Z ##[group]Run : disable incremental compilation
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6812971Z [36;1m: disable incremental compilation[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6813295Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6813822Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6814114Z [36;1mfi[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6834568Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6834911Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6835088Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6835307Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6835507Z   CARGO_HOME: /home/runner/.cargo
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6835741Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6917625Z ##[group]Run : enable colors in Cargo output
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6917962Z [36;1m: enable colors in Cargo output[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6918286Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6918635Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6918927Z [36;1mfi[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6938579Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6938929Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6939133Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6939373Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6939595Z   CARGO_HOME: /home/runner/.cargo
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6940034Z   CARGO_INCREMENTAL: 0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.6940252Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7008241Z ##[group]Run : enable Cargo sparse registry
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7008731Z [36;1m: enable Cargo sparse registry[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7009092Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7009794Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7011217Z [36;1m  if rustc +stable --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7012212Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7013122Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7013957Z [36;1m  elif rustc +stable --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7014853Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7015391Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7015725Z [36;1m  fi[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7015901Z [36;1mfi[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7040288Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7040833Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7041368Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7041639Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7041858Z   CARGO_HOME: /home/runner/.cargo
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7042093Z   CARGO_INCREMENTAL: 0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7042297Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7402774Z ##[group]Run : work around spurious network errors in curl 8.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7403213Z [36;1m: work around spurious network errors in curl 8.0[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7403976Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7404658Z [36;1mif rustc +stable --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7405130Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7405428Z [36;1mfi[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7426739Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7427069Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7427466Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7427712Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7427925Z   CARGO_HOME: /home/runner/.cargo
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7428154Z   CARGO_INCREMENTAL: 0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7428351Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7644365Z ##[group]Run rustc +stable --version --verbose
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7644951Z [36;1mrustc +stable --version --verbose[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7668779Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7669147Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7669341Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7669562Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7670044Z   CARGO_HOME: /home/runner/.cargo
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7670312Z   CARGO_INCREMENTAL: 0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7670515Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7852564Z rustc 1.95.0 (59807616e 2026-04-14)
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7853322Z binary: rustc
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7853751Z commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7854297Z commit-date: 2026-04-14
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7854663Z host: x86_64-unknown-linux-gnu
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7855035Z release: 1.95.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7855343Z LLVM version: 22.1.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7985641Z ##[group]Run Swatinem/rust-cache@v2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7985950Z with:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7986155Z   prefix-key: v0-rust
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7986390Z   add-job-id-key: true
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7986636Z   add-rust-environment-hash-key: true
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7986920Z   cache-targets: true
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7987140Z   cache-all-crates: false
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7987377Z   cache-workspace-crates: false
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7987624Z   save-if: true
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7988016Z   cache-provider: github
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7988237Z   cache-bin: true
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7988441Z   lookup-only: false
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7988649Z   cmd-format: {0}
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7988837Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7989021Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7989258Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7989476Z   CARGO_HOME: /home/runner/.cargo
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7989733Z   CARGO_INCREMENTAL: 0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:23.7989947Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.0778060Z (node:2431) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.0779461Z (Use `node --trace-deprecation ...` to show where the warning was created)
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2275621Z ##[group]Cache Configuration
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2276153Z Cache Provider:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2276476Z     github
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2276780Z Workspaces:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2277103Z     /home/runner/work/ovc/ovc
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2277491Z Cache Paths:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2277849Z     /home/runner/.cargo/bin
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2278263Z     /home/runner/.cargo/.crates.toml
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2278800Z     /home/runner/.cargo/.crates2.json
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2279267Z     /home/runner/.cargo/registry
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2279691Z     /home/runner/.cargo/git
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2280140Z     /home/runner/work/ovc/ovc/target
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2280571Z Restore Key:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2281227Z     v0-rust-clippy-Linux-x64-ae62368c
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2281703Z Cache Key:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2283434Z     v0-rust-clippy-Linux-x64-ae62368c-3c8f2c52
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2310149Z .. Prefix:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2310557Z   - v0-rust-clippy-Linux-x64
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2311137Z .. Environment considered:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2311558Z   - Rust Versions:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2312104Z     - 1.95.0 x86_64-unknown-linux-gnu 59807616e1fa2540724bfbac14d7976d7e4a3860
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2312712Z     - 1.95.0 x86_64-unknown-linux-gnu 59807616e1fa2540724bfbac14d7976d7e4a3860
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2313116Z   - CARGO_HOME
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2313299Z   - CARGO_INCREMENTAL
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2313495Z   - CARGO_TERM_COLOR
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2313686Z   - RUST_BACKTRACE
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2313877Z .. Lockfiles considered:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2314104Z   - /home/runner/work/ovc/ovc/Cargo.lock
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2314430Z   - /home/runner/work/ovc/ovc/crates/ovc-actions/Cargo.toml
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2314805Z   - /home/runner/work/ovc/ovc/crates/ovc-api/Cargo.toml
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2315160Z   - /home/runner/work/ovc/ovc/crates/ovc-cli/Cargo.toml
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2317910Z   - /home/runner/work/ovc/ovc/crates/ovc-cloud/Cargo.toml
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2318574Z   - /home/runner/work/ovc/ovc/crates/ovc-core/Cargo.toml
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2319163Z   - /home/runner/work/ovc/ovc/crates/ovc-git/Cargo.toml
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2319526Z   - /home/runner/work/ovc/ovc/crates/ovc-llm/Cargo.toml
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2319929Z   - /home/runner/work/ovc/ovc/crates/ovc-remote-helper/Cargo.toml
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2320599Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2320711Z 
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.2320797Z ... Restoring cache ...
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.3578076Z No cache found.
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.3739274Z ##[group]Run cargo clippy --workspace -- -D warnings
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.3739990Z [36;1mcargo clippy --workspace -- -D warnings[0m
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.3772565Z shell: /usr/bin/bash -e {0}
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.3772929Z env:
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.3773200Z   CARGO_TERM_COLOR: always
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.3773557Z   RUST_BACKTRACE: 1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.3773900Z   CARGO_HOME: /home/runner/.cargo
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.3774300Z   CARGO_INCREMENTAL: 0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.3774633Z   CACHE_ON_FAILURE: false
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.3774954Z ##[endgroup]
+Clippy	UNKNOWN STEP	2026-04-27T21:37:24.4540826Z [1m[92m    Updating[0m crates.io index
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.5168064Z [1m[92m Downloading[0m crates ...
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.5955778Z [1m[92m  Downloaded[0m aead v0.5.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6088225Z [1m[92m  Downloaded[0m anstyle-parse v1.0.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6136174Z [1m[92m  Downloaded[0m anstyle-query v1.1.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6156896Z [1m[92m  Downloaded[0m adler2 v2.0.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6177485Z [1m[92m  Downloaded[0m anstyle v1.0.14
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6216100Z [1m[92m  Downloaded[0m alloc-stdlib v0.2.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6248742Z [1m[92m  Downloaded[0m block-buffer v0.10.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6268436Z [1m[92m  Downloaded[0m atomic-waker v1.1.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6380885Z [1m[92m  Downloaded[0m http-body-util v0.1.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6428893Z [1m[92m  Downloaded[0m base16ct v0.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6450345Z [1m[92m  Downloaded[0m alloc-no-stdlib v2.0.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6484665Z [1m[92m  Downloaded[0m form_urlencoded v1.2.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6502345Z [1m[92m  Downloaded[0m compression-core v0.4.31
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6519805Z [1m[92m  Downloaded[0m cobs v0.3.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6544118Z [1m[92m  Downloaded[0m cfg-if v1.0.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6567900Z [1m[92m  Downloaded[0m embedded-io v0.6.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6587701Z [1m[92m  Downloaded[0m byteorder v1.5.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6610684Z [1m[92m  Downloaded[0m arrayvec v0.7.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6647510Z [1m[92m  Downloaded[0m http-body v1.0.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6666759Z [1m[92m  Downloaded[0m hex v0.4.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6697544Z [1m[92m  Downloaded[0m cpufeatures v0.3.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6735812Z [1m[92m  Downloaded[0m futures-macro v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6763541Z [1m[92m  Downloaded[0m errno v0.3.14
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6803612Z [1m[92m  Downloaded[0m cfg_aliases v0.2.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6834068Z [1m[92m  Downloaded[0m hmac v0.12.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6878449Z [1m[92m  Downloaded[0m cpufeatures v0.2.17
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6903389Z [1m[92m  Downloaded[0m futures-core v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6953656Z [1m[92m  Downloaded[0m httparse v1.10.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.6989293Z [1m[92m  Downloaded[0m hmac v0.13.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7019870Z [1m[92m  Downloaded[0m futures-sink v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7036113Z [1m[92m  Downloaded[0m equivalent v1.0.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7053423Z [1m[92m  Downloaded[0m embedded-io v0.4.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7080051Z [1m[92m  Downloaded[0m mime v0.3.17
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7101486Z [1m[92m  Downloaded[0m colorchoice v1.0.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7120096Z [1m[92m  Downloaded[0m clap_lex v1.1.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7141760Z [1m[92m  Downloaded[0m globset v0.4.18
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7166415Z [1m[92m  Downloaded[0m futures-task v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7186399Z [1m[92m  Downloaded[0m anstream v1.0.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7214005Z [1m[92m  Downloaded[0m crypto-common v0.1.7
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7241410Z [1m[92m  Downloaded[0m inout v0.1.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7260948Z [1m[92m  Downloaded[0m lru-slab v0.1.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7278833Z [1m[92m  Downloaded[0m num-iter v0.1.45
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7296512Z [1m[92m  Downloaded[0m crypto-common v0.2.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7322975Z [1m[92m  Downloaded[0m dirs-sys v0.5.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7343210Z [1m[92m  Downloaded[0m arrayref v0.3.9
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7363881Z [1m[92m  Downloaded[0m curve25519-dalek-derive v0.1.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7384297Z [1m[92m  Downloaded[0m matchers v0.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7405502Z [1m[92m  Downloaded[0m powerfmt v0.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7424653Z [1m[92m  Downloaded[0m http v1.4.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7472815Z [1m[92m  Downloaded[0m heck v0.5.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7493571Z [1m[92m  Downloaded[0m hash32 v0.2.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7515824Z [1m[92m  Downloaded[0m futures-io v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7536230Z [1m[92m  Downloaded[0m rustc-hash v2.1.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7558482Z [1m[92m  Downloaded[0m dirs v6.0.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7578117Z [1m[92m  Downloaded[0m fastrand v2.3.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7599839Z [1m[92m  Downloaded[0m percent-encoding v2.3.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7618361Z [1m[92m  Downloaded[0m group v0.13.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7642927Z [1m[92m  Downloaded[0m cipher v0.4.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7667979Z [1m[92m  Downloaded[0m rust-embed-utils v8.11.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7683868Z [1m[92m  Downloaded[0m chacha20 v0.9.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7710812Z [1m[92m  Downloaded[0m rust-embed-impl v8.11.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7725660Z [1m[92m  Downloaded[0m compression-codecs v0.4.37
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7780276Z [1m[92m  Downloaded[0m sha1 v0.10.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7811500Z [1m[92m  Downloaded[0m mime_guess v2.0.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7847915Z [1m[92m  Downloaded[0m serde_urlencoded v0.7.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7874982Z [1m[92m  Downloaded[0m sha1 v0.11.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7900430Z [1m[92m  Downloaded[0m rustc_version v0.4.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7932618Z [1m[92m  Downloaded[0m shell-words v1.1.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7956457Z [1m[92m  Downloaded[0m pin-utils v0.1.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7983626Z [1m[92m  Downloaded[0m stable_deref_trait v1.2.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.7996810Z [1m[92m  Downloaded[0m subtle v2.6.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8014824Z [1m[92m  Downloaded[0m rand_chacha v0.9.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8030641Z [1m[92m  Downloaded[0m strsim v0.11.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8048092Z [1m[92m  Downloaded[0m rand_core v0.9.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8072972Z [1m[92m  Downloaded[0m sha2 v0.10.9
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8115594Z [1m[92m  Downloaded[0m slab v0.4.12
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8134357Z [1m[92m  Downloaded[0m iana-time-zone v0.1.65
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8167209Z [1m[92m  Downloaded[0m simple_asn1 v0.6.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8185223Z [1m[92m  Downloaded[0m find-msvc-tools v0.1.9
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8223007Z [1m[92m  Downloaded[0m tower-service v0.3.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8234495Z [1m[92m  Downloaded[0m try-lock v0.2.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8255627Z [1m[92m  Downloaded[0m tokio-macros v2.7.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8272960Z [1m[92m  Downloaded[0m nu-ansi-term v0.50.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8300143Z [1m[92m  Downloaded[0m litemap v0.8.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8326729Z [1m[92m  Downloaded[0m ipnet v2.12.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8361012Z [1m[92m  Downloaded[0m tower-layer v0.3.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8376464Z [1m[92m  Downloaded[0m version_check v0.9.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8401031Z [1m[92m  Downloaded[0m want v0.3.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8419422Z [1m[92m  Downloaded[0m time-macros v0.2.27
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8446466Z [1m[92m  Downloaded[0m log v0.4.29
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8477159Z [1m[92m  Downloaded[0m yoke-derive v0.8.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8497577Z [1m[92m  Downloaded[0m zmij v1.0.21
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8540983Z [1m[92m  Downloaded[0m yoke v0.8.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8571284Z [1m[92m  Downloaded[0m tempfile v3.27.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8603337Z [1m[92m  Downloaded[0m serde_json v1.0.149
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8688422Z [1m[92m  Downloaded[0m brotli-decompressor v5.0.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8771572Z [1m[92m  Downloaded[0m zeroize_derive v1.4.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8793830Z [1m[92m  Downloaded[0m zeroize v1.8.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8815902Z [1m[92m  Downloaded[0m tower-http v0.6.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8926213Z [1m[92m  Downloaded[0m zstd-safe v7.2.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8956145Z [1m[92m  Downloaded[0m zopfli v0.8.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.8993474Z [1m[92m  Downloaded[0m typed-path v0.12.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.9074095Z [1m[92m  Downloaded[0m rustix v1.1.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.9366663Z [1m[92m  Downloaded[0m icu_properties_data v2.1.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.9475456Z [1m[92m  Downloaded[0m x25519-dalek v2.0.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.9498990Z [1m[92m  Downloaded[0m zerotrie v0.2.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.9544888Z [1m[92m  Downloaded[0m tracing-subscriber v0.3.23
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.9643620Z [1m[92m  Downloaded[0m url v2.5.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.9673497Z [1m[92m  Downloaded[0m syn v2.0.117
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.9787078Z [1m[92m  Downloaded[0m quinn-proto v0.11.14
+Clippy	UNKNOWN STEP	2026-04-27T21:37:25.9864554Z [1m[92m  Downloaded[0m brotli v8.0.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.0015601Z [1m[92m  Downloaded[0m regex-syntax v0.8.10
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.0085559Z [1m[92m  Downloaded[0m unicode-width v0.2.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.0146341Z [1m[92m  Downloaded[0m tokio v1.52.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.0589982Z [1m[92m  Downloaded[0m tracing v0.1.44
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.0754497Z [1m[92m  Downloaded[0m time v0.3.47
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.0885467Z [1m[92m  Downloaded[0m p384 v0.13.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.0932605Z [1m[92m  Downloaded[0m zerovec v0.11.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.0988779Z [1m[92m  Downloaded[0m encoding_rs v0.8.35
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.1192464Z [1m[92m  Downloaded[0m zlib-rs v0.6.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.1245888Z [1m[92m  Downloaded[0m reqwest v0.12.28
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.1299373Z [1m[92m  Downloaded[0m zip v8.6.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.1352244Z [1m[92m  Downloaded[0m regex v1.12.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.1404839Z [1m[92m  Downloaded[0m libm v0.2.16
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.1517127Z [1m[92m  Downloaded[0m zerocopy v0.8.47
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.1719179Z [1m[92m  Downloaded[0m iri-string v0.7.10
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.1795490Z [1m[92m  Downloaded[0m regex-automata v0.4.14
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.1934298Z [1m[92m  Downloaded[0m idna v1.1.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.1971881Z [1m[92m  Downloaded[0m hyper v1.8.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.2037264Z [1m[92m  Downloaded[0m rustls v0.23.37
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.2156828Z [1m[92m  Downloaded[0m num-bigint-dig v0.8.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.2202633Z [1m[92m  Downloaded[0m bstr v1.12.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.2279808Z [1m[92m  Downloaded[0m typenum v1.19.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.2309719Z [1m[92m  Downloaded[0m tungstenite v0.29.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.2344959Z [1m[92m  Downloaded[0m libc v0.2.183
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.2732124Z [1m[92m  Downloaded[0m num-bigint v0.4.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.2778348Z [1m[92m  Downloaded[0m rust-embed v8.11.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.2862210Z [1m[92m  Downloaded[0m mio v1.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.2921233Z [1m[92m  Downloaded[0m icu_collections v2.1.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.2982901Z [1m[92m  Downloaded[0m hyper-util v0.1.20
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3043505Z [1m[92m  Downloaded[0m zstd v0.13.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3074727Z [1m[92m  Downloaded[0m zstd-sys v2.0.16+zstd.1.5.7
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3232916Z [1m[92m  Downloaded[0m rsa v0.9.10
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3285832Z [1m[92m  Downloaded[0m rand v0.9.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3323247Z [1m[92m  Downloaded[0m curve25519-dalek v4.1.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3403261Z [1m[92m  Downloaded[0m tokio-util v0.7.18
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3478234Z [1m[92m  Downloaded[0m rustls-webpki v0.103.12
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3508261Z [1m[92m  Downloaded[0m memchr v2.8.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3561941Z [1m[92m  Downloaded[0m indexmap v2.13.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3604511Z [1m[92m  Downloaded[0m icu_locale_core v2.1.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3670355Z [1m[92m  Downloaded[0m rand v0.8.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3704804Z [1m[92m  Downloaded[0m quinn v0.11.9
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3736816Z [1m[92m  Downloaded[0m p256 v0.13.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3769907Z [1m[92m  Downloaded[0m miniz_oxide v0.8.9
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3794303Z [1m[92m  Downloaded[0m icu_normalizer v2.1.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3829007Z [1m[92m  Downloaded[0m webpki-roots v1.0.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3861835Z [1m[92m  Downloaded[0m hkdf v0.12.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3885486Z [1m[92m  Downloaded[0m blake3 v1.8.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3962455Z [1m[92m  Downloaded[0m zerofrom-derive v0.1.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3972593Z [1m[92m  Downloaded[0m zerofrom v0.1.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.3981121Z [1m[92m  Downloaded[0m xattr v1.6.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4034684Z [1m[92m  Downloaded[0m tracing-log v0.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4035192Z [1m[92m  Downloaded[0m tower v0.5.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4116687Z [1m[92m  Downloaded[0m tokio-tungstenite v0.29.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4136337Z [1m[92m  Downloaded[0m num-traits v0.2.19
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4162576Z [1m[92m  Downloaded[0m chrono v0.4.44
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4228339Z [1m[92m  Downloaded[0m hashbrown v0.16.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4278384Z [1m[92m  Downloaded[0m futures-util v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4407360Z [1m[92m  Downloaded[0m clap_builder v4.6.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4469951Z [1m[92m  Downloaded[0m axum v0.8.9
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4549957Z [1m[92m  Downloaded[0m serde_yaml v0.9.34+deprecated
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4583735Z [1m[92m  Downloaded[0m quinn-udp v0.5.14
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4601143Z [1m[92m  Downloaded[0m proc-macro2 v1.0.106
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4630386Z [1m[92m  Downloaded[0m postcard v1.1.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4653968Z [1m[92m  Downloaded[0m once_cell v1.21.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4678851Z [1m[92m  Downloaded[0m uuid v1.23.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4707505Z [1m[92m  Downloaded[0m unsafe-libyaml v0.2.11
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.4739093Z [1m[92m  Downloaded[0m ring v0.17.14
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5152998Z [1m[92m  Downloaded[0m unicode-ident v1.0.24
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5180360Z [1m[92m  Downloaded[0m icu_properties v2.1.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5202234Z [1m[92m  Downloaded[0m zerovec-derive v0.11.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5216779Z [1m[92m  Downloaded[0m writeable v0.6.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5234984Z [1m[92m  Downloaded[0m walkdir v2.5.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5253218Z [1m[92m  Downloaded[0m tracing-core v0.1.36
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5279518Z [1m[92m  Downloaded[0m serde v1.0.228
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5314285Z [1m[92m  Downloaded[0m utf8parse v0.2.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5324335Z [1m[92m  Downloaded[0m unicase v2.9.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5338422Z [1m[92m  Downloaded[0m tar v0.4.45
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5366018Z [1m[92m  Downloaded[0m ed25519-dalek v2.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5396964Z [1m[92m  Downloaded[0m der v0.7.10
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5449508Z [1m[92m  Downloaded[0m async-compression v0.4.41
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5517622Z [1m[92m  Downloaded[0m aho-corasick v1.1.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5568479Z [1m[92m  Downloaded[0m spin v0.9.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5592037Z [1m[92m  Downloaded[0m signal-hook-registry v1.4.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5604238Z [1m[92m  Downloaded[0m pem v3.0.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5618336Z [1m[92m  Downloaded[0m parking_lot v0.12.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5643087Z [1m[92m  Downloaded[0m jsonwebtoken v10.3.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5693161Z [1m[92m  Downloaded[0m untrusted v0.9.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5710258Z [1m[92m  Downloaded[0m universal-hash v0.5.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5721879Z [1m[92m  Downloaded[0m synstructure v0.13.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5732347Z [1m[92m  Downloaded[0m pkcs1 v0.7.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5756735Z [1m[92m  Downloaded[0m lock_api v0.4.14
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5769659Z [1m[92m  Downloaded[0m hyper-rustls v0.27.7
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5794014Z [1m[92m  Downloaded[0m utf8_iter v1.0.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5805088Z [1m[92m  Downloaded[0m tracing-attributes v0.1.31
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5831381Z [1m[92m  Downloaded[0m tinyvec v1.11.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5858106Z [1m[92m  Downloaded[0m heapless v0.7.17
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5894446Z [1m[92m  Downloaded[0m flate2 v1.1.9
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5943023Z [1m[92m  Downloaded[0m cc v1.2.57
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.5972179Z [1m[92m  Downloaded[0m bytes v1.11.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6014511Z [1m[92m  Downloaded[0m base64 v0.22.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6051475Z [1m[92m  Downloaded[0m tokio-rustls v0.26.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6072633Z [1m[92m  Downloaded[0m socket2 v0.6.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6090274Z [1m[92m  Downloaded[0m smallvec v1.15.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6111524Z [1m[92m  Downloaded[0m sharded-slab v0.1.7
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6145149Z [1m[92m  Downloaded[0m parking_lot_core v0.9.12
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6166003Z [1m[92m  Downloaded[0m crypto-bigint v0.5.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6236826Z [1m[92m  Downloaded[0m bumpalo v3.20.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6262884Z [1m[92m  Downloaded[0m time-core v0.1.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6273800Z [1m[92m  Downloaded[0m shlex v1.3.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6286570Z [1m[92m  Downloaded[0m serde_derive v1.0.228
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6316618Z [1m[92m  Downloaded[0m serde_core v1.0.228
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6343864Z [1m[92m  Downloaded[0m ppv-lite86 v0.2.21
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6357121Z [1m[92m  Downloaded[0m password-hash v0.5.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6374972Z [1m[92m  Downloaded[0m tinystr v0.8.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6395984Z [1m[92m  Downloaded[0m ryu v1.0.23
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6428718Z [1m[92m  Downloaded[0m elliptic-curve v0.13.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6466673Z [1m[92m  Downloaded[0m crc32fast v1.5.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6485560Z [1m[92m  Downloaded[0m const-oid v0.10.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6509366Z [1m[92m  Downloaded[0m chacha20poly1305 v0.10.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6525344Z [1m[92m  Downloaded[0m blake2 v0.10.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6550621Z [1m[92m  Downloaded[0m tinyvec_macros v0.1.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6559466Z [1m[92m  Downloaded[0m thread_local v1.1.9
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6574871Z [1m[92m  Downloaded[0m thiserror-impl v2.0.18
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6589634Z [1m[92m  Downloaded[0m thiserror v2.0.18
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6653805Z [1m[92m  Downloaded[0m sync_wrapper v1.0.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6662704Z [1m[92m  Downloaded[0m spki v0.7.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6680592Z [1m[92m  Downloaded[0m sha2 v0.11.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6724453Z [1m[92m  Downloaded[0m semver v1.0.27
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6747201Z [1m[92m  Downloaded[0m matchit v0.8.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6768829Z [1m[92m  Downloaded[0m getrandom v0.4.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6807260Z [1m[92m  Downloaded[0m getrandom v0.3.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6841388Z [1m[92m  Downloaded[0m futures v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6891077Z [1m[92m  Downloaded[0m clap v4.6.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.6986135Z [1m[92m  Downloaded[0m simd-adler32 v0.3.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7004830Z [1m[92m  Downloaded[0m primeorder v0.13.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7018062Z [1m[92m  Downloaded[0m poly1305 v0.8.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7042940Z [1m[92m  Downloaded[0m pkg-config v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7058668Z [1m[92m  Downloaded[0m pkcs8 v0.10.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7087186Z [1m[92m  Downloaded[0m pem-rfc7468 v0.7.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7106848Z [1m[92m  Downloaded[0m num-integer v0.1.46
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7122902Z [1m[92m  Downloaded[0m jobserver v0.1.34
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7143305Z [1m[92m  Downloaded[0m linux-raw-sys v0.12.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7755032Z [1m[92m  Downloaded[0m serde_path_to_error v0.1.20
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7770898Z [1m[92m  Downloaded[0m sec1 v0.7.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7787702Z [1m[92m  Downloaded[0m rustls-pki-types v1.14.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7812598Z [1m[92m  Downloaded[0m quote v1.0.45
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7840044Z [1m[92m  Downloaded[0m futures-executor v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7853778Z [1m[92m  Downloaded[0m futures-channel v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7872144Z [1m[92m  Downloaded[0m rand_core v0.6.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7885642Z [1m[92m  Downloaded[0m pin-project-lite v0.2.17
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7942712Z [1m[92m  Downloaded[0m lazy_static v1.5.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7960109Z [1m[92m  Downloaded[0m signature v2.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7974785Z [1m[92m  Downloaded[0m console v0.16.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.7991293Z [1m[92m  Downloaded[0m bitflags v2.11.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8033687Z [1m[92m  Downloaded[0m num-conv v0.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8041976Z [1m[92m  Downloaded[0m icu_normalizer_data v2.1.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8062139Z [1m[92m  Downloaded[0m cmov v0.5.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8078990Z [1m[92m  Downloaded[0m axum-macros v0.5.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8187823Z [1m[92m  Downloaded[0m multer v3.1.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8211559Z [1m[92m  Downloaded[0m icu_provider v2.1.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8236870Z [1m[92m  Downloaded[0m hybrid-array v0.4.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8256929Z [1m[92m  Downloaded[0m getrandom v0.2.17
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8285731Z [1m[92m  Downloaded[0m ecdsa v0.16.9
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8302947Z [1m[92m  Downloaded[0m const-oid v0.9.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8321416Z [1m[92m  Downloaded[0m rfc6979 v0.4.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8331832Z [1m[92m  Downloaded[0m opaque-debug v0.3.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8341230Z [1m[92m  Downloaded[0m itoa v1.0.18
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8355940Z [1m[92m  Downloaded[0m is_terminal_polyfill v1.70.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8365285Z [1m[92m  Downloaded[0m dialoguer v0.12.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8398991Z [1m[92m  Downloaded[0m base64ct v1.8.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8423918Z [1m[92m  Downloaded[0m httpdate v1.0.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8435872Z [1m[92m  Downloaded[0m digest v0.11.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8458858Z [1m[92m  Downloaded[0m deranged v0.5.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8472684Z [1m[92m  Downloaded[0m axum-core v0.5.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8494418Z [1m[92m  Downloaded[0m autocfg v1.5.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8513117Z [1m[92m  Downloaded[0m async-trait v0.1.89
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8549424Z [1m[92m  Downloaded[0m anyhow v1.0.102
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8588504Z [1m[92m  Downloaded[0m scopeguard v1.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8600344Z [1m[92m  Downloaded[0m same-file v1.0.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8614332Z [1m[92m  Downloaded[0m generic-array v0.14.7
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8627974Z [1m[92m  Downloaded[0m ed25519 v2.2.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8645416Z [1m[92m  Downloaded[0m displaydoc v0.2.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8675249Z [1m[92m  Downloaded[0m digest v0.10.7
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8692880Z [1m[92m  Downloaded[0m clap_derive v4.6.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8714610Z [1m[92m  Downloaded[0m potential_utf v0.1.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8724637Z [1m[92m  Downloaded[0m option-ext v0.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8733023Z [1m[92m  Downloaded[0m rand_chacha v0.3.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8743988Z [1m[92m  Downloaded[0m ff v0.13.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8758999Z [1m[92m  Downloaded[0m argon2 v0.5.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8775196Z [1m[92m  Downloaded[0m filetime v0.2.27
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8791536Z [1m[92m  Downloaded[0m data-encoding v2.10.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8801267Z [1m[92m  Downloaded[0m ctutils v0.4.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8820005Z [1m[92m  Downloaded[0m constant_time_eq v0.4.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8840840Z [1m[92m  Downloaded[0m idna_adapter v1.2.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.8849999Z [1m[92m  Downloaded[0m block-buffer v0.12.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.9946596Z [1m[92m   Compiling[0m proc-macro2 v1.0.106
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.9947559Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.9948319Z [1m[92m   Compiling[0m quote v1.0.45
+Clippy	UNKNOWN STEP	2026-04-27T21:37:26.9949010Z [1m[92m   Compiling[0m libc v0.2.183
+Clippy	UNKNOWN STEP	2026-04-27T21:37:27.0562359Z [1m[92m    Checking[0m cfg-if v1.0.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:27.0777036Z [1m[92m   Compiling[0m version_check v0.9.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:27.2182353Z [1m[92m   Compiling[0m typenum v1.19.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:27.3032408Z [1m[92m   Compiling[0m generic-array v0.14.7
+Clippy	UNKNOWN STEP	2026-04-27T21:37:27.4052323Z [1m[92m    Checking[0m subtle v2.6.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:27.4972089Z [1m[92m    Checking[0m const-oid v0.9.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:27.5752410Z [1m[92m    Checking[0m scopeguard v1.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:27.6122641Z [1m[92m    Checking[0m lock_api v0.4.14
+Clippy	UNKNOWN STEP	2026-04-27T21:37:27.9612192Z [1m[92m   Compiling[0m syn v2.0.117
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.0510411Z [1m[92m    Checking[0m getrandom v0.2.17
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.1342224Z [1m[92m    Checking[0m rand_core v0.6.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.1681324Z [1m[92m    Checking[0m memchr v2.8.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.2392222Z [1m[92m   Compiling[0m find-msvc-tools v0.1.9
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.3982598Z [1m[92m   Compiling[0m shlex v1.3.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.5222285Z [1m[92m    Checking[0m smallvec v1.15.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.5522378Z [1m[92m    Checking[0m itoa v1.0.18
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.6342364Z [1m[92m    Checking[0m pin-project-lite v0.2.17
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.6493054Z [1m[92m    Checking[0m base64ct v1.8.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.6664389Z [1m[92m    Checking[0m cpufeatures v0.2.17
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.6922319Z [1m[92m    Checking[0m stable_deref_trait v1.2.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.7212408Z [1m[92m    Checking[0m bytes v1.11.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.7902237Z [1m[92m   Compiling[0m jobserver v0.1.34
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.8123491Z [1m[92m    Checking[0m log v0.4.29
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.9192391Z [1m[92m    Checking[0m futures-core v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:28.9772755Z [1m[92m   Compiling[0m cc v1.2.57
+Clippy	UNKNOWN STEP	2026-04-27T21:37:29.0837699Z [1m[92m    Checking[0m pem-rfc7468 v0.7.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:29.1473696Z [1m[92m   Compiling[0m zerocopy v0.8.47
+Clippy	UNKNOWN STEP	2026-04-27T21:37:29.1632329Z [1m[92m   Compiling[0m parking_lot_core v0.9.12
+Clippy	UNKNOWN STEP	2026-04-27T21:37:29.2852441Z [1m[92m    Checking[0m once_cell v1.21.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:29.3782602Z [1m[92m   Compiling[0m serde_core v1.0.228
+Clippy	UNKNOWN STEP	2026-04-27T21:37:29.4222735Z [1m[92m    Checking[0m futures-sink v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:30.5322721Z [1m[92m    Checking[0m errno v0.3.14
+Clippy	UNKNOWN STEP	2026-04-27T21:37:30.5912252Z [1m[92m   Compiling[0m libm v0.2.16
+Clippy	UNKNOWN STEP	2026-04-27T21:37:30.7662499Z [1m[92m   Compiling[0m autocfg v1.5.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:31.0762442Z [1m[92m   Compiling[0m semver v1.0.27
+Clippy	UNKNOWN STEP	2026-04-27T21:37:31.3132479Z [1m[92m   Compiling[0m rustc_version v0.4.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:31.4472157Z [1m[92m   Compiling[0m num-traits v0.2.19
+Clippy	UNKNOWN STEP	2026-04-27T21:37:31.5249869Z [1m[92m   Compiling[0m synstructure v0.13.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:31.5432926Z [1m[92m    Checking[0m signal-hook-registry v1.4.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:31.6392128Z [1m[92m    Checking[0m parking_lot v0.12.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:31.7654788Z [1m[92m    Checking[0m futures-channel v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:31.9022462Z [1m[92m    Checking[0m http v1.4.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:32.0412447Z [1m[92m    Checking[0m socket2 v0.6.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:32.2706862Z [1m[92m    Checking[0m mio v1.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:32.4680410Z [1m[92m    Checking[0m spin v0.9.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:32.5082479Z [1m[92m   Compiling[0m pkg-config v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:32.5877989Z [1m[92m   Compiling[0m serde v1.0.228
+Clippy	UNKNOWN STEP	2026-04-27T21:37:32.9522624Z [1m[92m   Compiling[0m zstd-sys v2.0.16+zstd.1.5.7
+Clippy	UNKNOWN STEP	2026-04-27T21:37:33.0063456Z [1m[92m    Checking[0m ppv-lite86 v0.2.21
+Clippy	UNKNOWN STEP	2026-04-27T21:37:33.1685423Z [1m[92m   Compiling[0m zeroize_derive v1.4.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:33.1732578Z [1m[92m   Compiling[0m zerofrom-derive v0.1.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:33.2992824Z [1m[92m   Compiling[0m yoke-derive v0.8.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:33.5792975Z [1m[92m   Compiling[0m tokio-macros v2.7.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:33.5862024Z [1m[92m    Checking[0m zeroize v1.8.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:34.0912389Z [1m[92m    Checking[0m der v0.7.10
+Clippy	UNKNOWN STEP	2026-04-27T21:37:34.1860148Z [1m[92m    Checking[0m crypto-common v0.1.7
+Clippy	UNKNOWN STEP	2026-04-27T21:37:34.2332347Z [1m[92m    Checking[0m block-buffer v0.10.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:34.2538837Z [1m[92m   Compiling[0m zerovec-derive v0.11.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:34.2912419Z [1m[92m    Checking[0m zerofrom v0.1.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:34.3112669Z [1m[92m    Checking[0m digest v0.10.7
+Clippy	UNKNOWN STEP	2026-04-27T21:37:34.3612160Z [1m[92m    Checking[0m yoke v0.8.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:34.4522556Z [1m[92m    Checking[0m tokio v1.52.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:34.4752283Z [1m[92m   Compiling[0m serde_derive v1.0.228
+Clippy	UNKNOWN STEP	2026-04-27T21:37:34.8682540Z [1m[92m    Checking[0m spki v0.7.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:34.9582352Z [1m[92m    Checking[0m pkcs8 v0.10.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:35.0512469Z [1m[92m   Compiling[0m displaydoc v0.2.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:35.2252238Z [1m[92m    Checking[0m zerovec v0.11.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:35.5853872Z [1m[92m   Compiling[0m futures-macro v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:35.7632585Z [1m[92m    Checking[0m futures-task v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:35.8432342Z [1m[92m    Checking[0m slab v0.4.12
+Clippy	UNKNOWN STEP	2026-04-27T21:37:35.9402202Z [1m[92m   Compiling[0m thiserror v2.0.18
+Clippy	UNKNOWN STEP	2026-04-27T21:37:36.1302563Z [1m[92m    Checking[0m futures-io v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:36.2305525Z [1m[92m    Checking[0m futures-util v0.3.32
+Clippy	UNKNOWN STEP	2026-04-27T21:37:37.9379323Z [1m[92m   Compiling[0m thiserror-impl v2.0.18
+Clippy	UNKNOWN STEP	2026-04-27T21:37:37.9791627Z [1m[92m    Checking[0m tracing-core v0.1.36
+Clippy	UNKNOWN STEP	2026-04-27T21:37:38.1826583Z [1m[92m   Compiling[0m crc32fast v1.5.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:38.3115874Z [1m[92m   Compiling[0m httparse v1.10.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:38.4002511Z [1m[92m    Checking[0m signature v2.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:38.4402816Z [1m[92m   Compiling[0m tracing-attributes v0.1.31
+Clippy	UNKNOWN STEP	2026-04-27T21:37:38.5092446Z [1m[92m    Checking[0m simd-adler32 v0.3.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:38.6292483Z [1m[92m   Compiling[0m zstd-safe v7.2.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:38.9532352Z [1m[92m    Checking[0m tinystr v0.8.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:39.0598948Z [1m[92m    Checking[0m sha2 v0.10.9
+Clippy	UNKNOWN STEP	2026-04-27T21:37:39.0932308Z [1m[92m    Checking[0m http-body v1.0.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:39.1435634Z [1m[92m   Compiling[0m ring v0.17.14
+Clippy	UNKNOWN STEP	2026-04-27T21:37:39.2522241Z [1m[92m    Checking[0m hybrid-array v0.4.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:39.4772301Z [1m[92m   Compiling[0m zmij v1.0.21
+Clippy	UNKNOWN STEP	2026-04-27T21:37:39.5452384Z [1m[92m    Checking[0m tracing v0.1.44
+Clippy	UNKNOWN STEP	2026-04-27T21:37:39.6182451Z [1m[92m    Checking[0m litemap v0.8.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:39.6812352Z [1m[92m    Checking[0m adler2 v2.0.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:39.7272184Z [1m[92m    Checking[0m writeable v0.6.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:39.7352555Z [1m[92m    Checking[0m base64 v0.22.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:39.7662357Z [1m[92m    Checking[0m miniz_oxide v0.8.9
+Clippy	UNKNOWN STEP	2026-04-27T21:37:39.8252516Z [1m[92m    Checking[0m icu_locale_core v2.1.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:40.0765603Z [1m[92m    Checking[0m potential_utf v0.1.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:40.1309035Z [1m[92m    Checking[0m zerotrie v0.2.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:40.2461449Z [1m[92m   Compiling[0m curve25519-dalek v4.1.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:40.2954066Z [1m[92m    Checking[0m aho-corasick v1.1.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:40.3566070Z [1m[92m    Checking[0m cmov v0.5.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:40.4588662Z [1m[92m    Checking[0m alloc-no-stdlib v2.0.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:40.4953935Z [1m[92m    Checking[0m bitflags v2.11.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:40.5752297Z [1m[92m   Compiling[0m getrandom v0.3.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:40.7295300Z [1m[92m    Checking[0m percent-encoding v2.3.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:40.7775711Z [1m[92m   Compiling[0m serde_json v1.0.149
+Clippy	UNKNOWN STEP	2026-04-27T21:37:40.8432697Z [1m[92m   Compiling[0m icu_properties_data v2.1.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:40.9198702Z [1m[92m   Compiling[0m icu_normalizer_data v2.1.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:41.0022475Z [1m[92m    Checking[0m tower-service v0.3.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:41.0339028Z [1m[92m    Checking[0m regex-syntax v0.8.10
+Clippy	UNKNOWN STEP	2026-04-27T21:37:41.0374835Z [1m[92m    Checking[0m zlib-rs v0.6.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:41.9602600Z [1m[92m    Checking[0m flate2 v1.1.9
+Clippy	UNKNOWN STEP	2026-04-27T21:37:42.1192829Z [1m[92m    Checking[0m regex-automata v0.4.14
+Clippy	UNKNOWN STEP	2026-04-27T21:37:42.2363702Z [1m[92m    Checking[0m alloc-stdlib v0.2.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:42.2719648Z [1m[92m    Checking[0m ctutils v0.4.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:42.3967975Z [1m[92m    Checking[0m icu_provider v2.1.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:42.5649451Z [1m[92m    Checking[0m icu_collections v2.1.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:42.9861656Z [1m[92m    Checking[0m block-buffer v0.12.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:43.0680255Z [1m[92m    Checking[0m crypto-common v0.2.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:43.5992557Z [1m[92m    Checking[0m rustls-pki-types v1.14.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:43.7625611Z [1m[92m    Checking[0m rand_chacha v0.3.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:43.8168567Z [1m[92m   Compiling[0m curve25519-dalek-derive v0.1.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:43.9312648Z [1m[92m    Checking[0m try-lock v0.2.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:43.9653442Z [1m[92m    Checking[0m untrusted v0.9.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:44.0067765Z [1m[92m    Checking[0m const-oid v0.10.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:44.0922311Z [1m[92m    Checking[0m digest v0.11.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:44.1751627Z [1m[92m    Checking[0m want v0.3.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:44.2479057Z [1m[92m    Checking[0m rand v0.8.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:44.8250233Z [1m[92m    Checking[0m brotli-decompressor v5.0.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:45.3355814Z [1m[92m    Checking[0m hmac v0.12.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:45.3857652Z [1m[92m    Checking[0m inout v0.1.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:45.4268885Z [1m[92m   Compiling[0m heapless v0.7.17
+Clippy	UNKNOWN STEP	2026-04-27T21:37:45.5163342Z [1m[92m    Checking[0m sync_wrapper v1.0.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:45.5564608Z [1m[92m    Checking[0m atomic-waker v1.1.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:45.5897094Z [1m[92m    Checking[0m tower-layer v0.3.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:45.6955113Z [1m[92m   Compiling[0m rustls v0.23.37
+Clippy	UNKNOWN STEP	2026-04-27T21:37:45.7587595Z [1m[92m    Checking[0m pin-utils v0.1.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:45.7696675Z [1m[92m    Checking[0m httpdate v1.0.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:45.7821666Z [1m[92m    Checking[0m cpufeatures v0.3.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:45.8074280Z [1m[92m    Checking[0m byteorder v1.5.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:45.8304724Z [1m[92m    Checking[0m hyper v1.8.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:45.8813482Z [1m[92m    Checking[0m hash32 v0.2.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:46.2877897Z [1m[92m    Checking[0m cipher v0.4.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:46.3251904Z [1m[92m    Checking[0m icu_properties v2.1.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:46.4098115Z [1m[92m    Checking[0m icu_normalizer v2.1.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:46.6387808Z [1m[92m    Checking[0m brotli v8.0.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:46.9218802Z [1m[92m    Checking[0m form_urlencoded v1.2.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:46.9692919Z [1m[92m    Checking[0m ed25519 v2.2.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:47.0356719Z [1m[92m    Checking[0m universal-hash v0.5.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:47.0785934Z [1m[92m   Compiling[0m blake3 v1.8.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:47.2086811Z [1m[92m    Checking[0m ff v0.13.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:47.2559208Z [1m[92m    Checking[0m ryu v1.0.23
+Clippy	UNKNOWN STEP	2026-04-27T21:37:47.3081602Z [1m[92m    Checking[0m ipnet v2.12.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:47.4240715Z [1m[92m    Checking[0m option-ext v0.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:47.4493940Z [1m[92m    Checking[0m opaque-debug v0.3.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:47.4671458Z [1m[92m    Checking[0m compression-core v0.4.31
+Clippy	UNKNOWN STEP	2026-04-27T21:37:47.5075707Z [1m[92m    Checking[0m base16ct v0.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:47.5486521Z [1m[92m    Checking[0m sec1 v0.7.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:47.6449663Z [1m[92m    Checking[0m poly1305 v0.8.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:47.7595395Z [1m[92m    Checking[0m dirs-sys v0.5.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:47.7988028Z [1m[92m    Checking[0m hyper-util v0.1.20
+Clippy	UNKNOWN STEP	2026-04-27T21:37:48.7156100Z [1m[92m    Checking[0m group v0.13.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:48.9005287Z [1m[92m    Checking[0m ed25519-dalek v2.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:49.0012204Z [1m[92m    Checking[0m idna_adapter v1.2.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:49.0346134Z [1m[92m    Checking[0m chacha20 v0.9.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:49.4022283Z [1m[92m    Checking[0m rustls-webpki v0.103.12
+Clippy	UNKNOWN STEP	2026-04-27T21:37:49.5052183Z [1m[92m    Checking[0m tower v0.5.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:49.5682316Z [1m[92m    Checking[0m hkdf v0.12.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:49.6322225Z [1m[92m    Checking[0m http-body-util v0.1.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:49.7982133Z [1m[92m    Checking[0m cobs v0.3.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:49.8658527Z [1m[92m    Checking[0m num-integer v0.1.46
+Clippy	UNKNOWN STEP	2026-04-27T21:37:49.8690122Z [1m[92m    Checking[0m blake2 v0.10.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:50.0332873Z [1m[92m    Checking[0m aead v0.5.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:50.0390085Z [1m[92m    Checking[0m crypto-bigint v0.5.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:50.1042794Z [1m[92m    Checking[0m password-hash v0.5.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:50.2502728Z [1m[92m    Checking[0m bstr v1.12.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:50.5264375Z [1m[92m    Checking[0m iana-time-zone v0.1.65
+Clippy	UNKNOWN STEP	2026-04-27T21:37:50.5682186Z [1m[92m    Checking[0m arrayvec v0.7.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:50.6792372Z [1m[92m    Checking[0m constant_time_eq v0.4.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:50.7392410Z [1m[92m    Checking[0m utf8_iter v1.0.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:50.8032429Z [1m[92m    Checking[0m arrayref v0.3.9
+Clippy	UNKNOWN STEP	2026-04-27T21:37:50.8282351Z [1m[92m   Compiling[0m rustix v1.1.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:51.0705144Z [1m[92m    Checking[0m elliptic-curve v0.13.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:51.3342237Z [1m[92m    Checking[0m idna v1.1.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:51.3542533Z [1m[92m    Checking[0m chrono v0.4.44
+Clippy	UNKNOWN STEP	2026-04-27T21:37:51.5222314Z [1m[92m    Checking[0m globset v0.4.18
+Clippy	UNKNOWN STEP	2026-04-27T21:37:51.7252659Z [1m[92m    Checking[0m argon2 v0.5.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:51.9738431Z [1m[92m    Checking[0m chacha20poly1305 v0.10.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.0303240Z [1m[92m    Checking[0m postcard v1.1.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.0379875Z [1m[92m    Checking[0m tokio-rustls v0.26.4
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.1873582Z [1m[92m    Checking[0m dirs v6.0.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.1922689Z [1m[92m    Checking[0m serde_urlencoded v0.7.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.2672912Z [1m[92m    Checking[0m sha2 v0.11.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.2792804Z [1m[92m    Checking[0m rand_core v0.9.5
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.3402448Z [1m[92m    Checking[0m x25519-dalek v2.0.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.3844315Z [1m[92m    Checking[0m hmac v0.13.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.3972284Z [1m[92m    Checking[0m regex v1.12.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.4725357Z [1m[92m    Checking[0m webpki-roots v1.0.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.5360496Z [1m[92m    Checking[0m tokio-util v0.7.18
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.6163016Z [1m[92m    Checking[0m zstd v0.13.3
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.6452285Z [1m[92m    Checking[0m lazy_static v1.5.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.6752237Z [1m[92m    Checking[0m iri-string v0.7.10
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.7732857Z [1m[92m    Checking[0m compression-codecs v0.4.37
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.8110763Z [1m[92m    Checking[0m linux-raw-sys v0.12.1
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.8854541Z [1m[92m    Checking[0m same-file v1.0.6
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.9347614Z [1m[92m    Checking[0m async-compression v0.4.41
+Clippy	UNKNOWN STEP	2026-04-27T21:37:52.9364744Z [1m[92m   Compiling[0m getrandom v0.4.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:53.0722419Z [1m[92m    Checking[0m walkdir v2.5.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:53.1752714Z [1m[92m    Checking[0m ovc-core v0.1.7 (/home/runner/work/ovc/ovc/crates/ovc-core)
+Clippy	UNKNOWN STEP	2026-04-27T21:37:53.2462492Z [1m[92m    Checking[0m hyper-rustls v0.27.7
+Clippy	UNKNOWN STEP	2026-04-27T21:37:53.3672644Z [1m[92m    Checking[0m rand_chacha v0.9.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:53.6185553Z [1m[92m    Checking[0m url v2.5.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:53.8879082Z [1m[92m    Checking[0m tower-http v0.6.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:53.9862733Z [1m[92m    Checking[0m rfc6979 v0.4.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:54.1192484Z [1m[92m    Checking[0m utf8parse v0.2.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:54.1612254Z [1m[92m   Compiling[0m time-core v0.1.8
+Clippy	UNKNOWN STEP	2026-04-27T21:37:54.2872479Z [1m[92m    Checking[0m equivalent v1.0.2
+Clippy	UNKNOWN STEP	2026-04-27T21:37:54.3182557Z [1m[92m    Checking[0m powerfmt v0.2.0
+Clippy	UNKNOWN STEP	2026-04-27T21:37:54.3978704Z [1m[92m   Compiling[0m num-bigint-dig v0.8.6
