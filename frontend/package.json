@@ -2,7 +2,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.96.2",
     "axios": "^1.13.6",
-    "dompurify": "^3.3.3",
+    "dompurify": "^3.4.2",
     "highlight.js": "^11.11.1",
     "lucide-react": "^1.8.0",
     "marked": "^18.0.0",
