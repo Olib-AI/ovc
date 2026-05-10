@@ -26,3 +26,7 @@ Thumbs.db
 *.ovc.tmp
 *.ovc.lock
 .ovc/actions-history/
+
+# Local scratch dumps
+clippy_part.txt
+run_log.txt

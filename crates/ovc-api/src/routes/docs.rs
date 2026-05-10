@@ -1315,7 +1315,7 @@ fn ui_docs() -> Vec<DocSection> {
                 "- `symlink_check` — Broken symlinks\n",
                 "- `large_diff_warning` — Oversized changesets\n",
                 "- `branch_naming` — Branch name pattern validation\n",
-                "- `debug_statements` — `console.log`, `println!`, `dbg!`, etc.\n",
+                "- `debug_statements` — `console.log`, `println!`, `dbg!`, etc.\n", // ovc:ignore
                 "- `mixed_indentation` — Tabs vs spaces mixing\n",
                 "- `bom_check` — UTF-8 BOM detection\n",
                 "- `shell_check` — Shell script best practices\n",
