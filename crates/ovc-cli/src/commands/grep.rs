@@ -50,7 +50,7 @@ pub fn execute(ctx: &CliContext, args: &GrepArgs) -> Result<()> {
         }
     } else {
         let re_pattern = if args.case_insensitive {
-            format!("(?i){}", &args.pattern)
+            format!("(?i){}", args.pattern)
         } else {
             args.pattern.clone()
         };

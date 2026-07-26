@@ -359,7 +359,7 @@ impl StorageBackend for GcsBackend {
         let mut page_token: Option<String> = None;
 
         loop {
-            let mut url = format!("{GCS_API_BASE}/b/{}/o?prefix={}", self.bucket, &full_prefix);
+            let mut url = format!("{GCS_API_BASE}/b/{}/o?prefix={}", self.bucket, full_prefix);
 
             if let Some(ref token) = page_token {
                 use std::fmt::Write;
