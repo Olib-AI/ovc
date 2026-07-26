@@ -3464,7 +3464,7 @@ fn shannon_entropy(s: &[u8]) -> f64 {
     for &count in &freq {
         if count > 0 {
             let p = f64::from(count) / len;
-            entropy -= p * p.log2();
+            entropy = p.mul_add(-p.log2(), entropy);
         }
     }
     entropy
