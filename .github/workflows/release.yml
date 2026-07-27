@@ -257,7 +257,7 @@ jobs:
             artifact: ovc-desktop-macos-arm64.dmg
           - target: x86_64-pc-windows-msvc
             os: windows-latest
-            format: msi
+            format: wxsmsi
             artifact: ovc-desktop-windows-amd64.msi
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
@@ -324,7 +324,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $bundle = Get-ChildItem "target/${{ matrix.target }}/release/bundle/msi/*.msi" | Select-Object -First 1
+          $bundle = Get-ChildItem "target/${{ matrix.target }}/release/bundle/${{ matrix.format }}" -Filter *.msi -Recurse | Select-Object -First 1
           if (-not $bundle) { throw "cargo-bundle did not produce an MSI" }
           Copy-Item $bundle.FullName "${{ matrix.artifact }}"
 
