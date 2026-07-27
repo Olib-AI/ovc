@@ -8,7 +8,7 @@ description = "Native Slint desktop shell for the OVC web interface"
 build = "build.rs"
 
 [[bin]]
-name = "ovc-desktop"
+name = "ovc_desktop"
 path = "src/main.rs"
 
 [dependencies]

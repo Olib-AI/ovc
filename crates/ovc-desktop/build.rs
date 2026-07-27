@@ -6,8 +6,8 @@ fn main() {
             .set_icon("icons/icon.ico")
             .set("ProductName", "OVC")
             .set("FileDescription", "OVC Desktop")
-            .set("InternalName", "ovc-desktop.exe")
-            .set("OriginalFilename", "ovc-desktop.exe")
+            .set("InternalName", "ovc_desktop.exe")
+            .set("OriginalFilename", "ovc_desktop.exe")
             .compile()
             .expect("failed to compile Windows application resources");
     }
