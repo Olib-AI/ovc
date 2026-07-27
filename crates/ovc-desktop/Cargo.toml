@@ -55,6 +55,5 @@ icon = [
     "crates/ovc-desktop/icons/1024x1024.png",
     "crates/ovc-desktop/icons/icon.ico",
 ]
-resources = ["examples/logo.svg"]
 deb_depends = ["libgtk-3-0", "libwebkit2gtk-4.1-0"]
 osx_minimum_system_version = "12.0"
