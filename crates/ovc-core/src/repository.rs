@@ -444,7 +444,7 @@ impl Repository {
         // write to an arbitrary location.
         let random_suffix = {
             let mut buf = [0u8; 8];
-            rand::RngCore::fill_bytes(&mut rand::rngs::OsRng, &mut buf);
+            crate::crypto::fill_random(&mut buf);
             let mut hex = String::with_capacity(16);
             for b in buf {
                 use std::fmt::Write;

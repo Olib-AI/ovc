@@ -325,10 +325,8 @@ fn load_or_create_persisted_secret(
 
 /// Generates a random 32-byte hex secret for JWT signing.
 fn generate_secret() -> String {
-    use rand::Rng;
-    let mut rng = rand::thread_rng();
     let mut bytes = [0u8; 32];
-    rng.fill(&mut bytes);
+    getrandom::fill(&mut bytes).expect("operating system random source unavailable");
     hex_encode(&bytes)
 }
 

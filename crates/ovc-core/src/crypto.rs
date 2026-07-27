@@ -158,7 +158,7 @@ pub fn decrypt_segment(
 #[must_use]
 pub fn generate_key() -> Zeroizing<[u8; 32]> {
     let mut key = Zeroizing::new([0u8; 32]);
-    rand::RngCore::fill_bytes(&mut rand::rngs::OsRng, key.as_mut());
+    fill_random(key.as_mut());
     key
 }
 
@@ -166,7 +166,7 @@ pub fn generate_key() -> Zeroizing<[u8; 32]> {
 #[must_use]
 pub fn generate_salt() -> [u8; 32] {
     let mut salt = [0u8; 32];
-    rand::RngCore::fill_bytes(&mut rand::rngs::OsRng, &mut salt);
+    fill_random(&mut salt);
     salt
 }
 
@@ -174,8 +174,13 @@ pub fn generate_salt() -> [u8; 32] {
 #[must_use]
 pub fn generate_nonce() -> [u8; 24] {
     let mut nonce = [0u8; 24];
-    rand::RngCore::fill_bytes(&mut rand::rngs::OsRng, &mut nonce);
+    fill_random(&mut nonce);
     nonce
+}
+
+/// Fills a buffer from the operating system's cryptographic random source.
+pub(crate) fn fill_random(destination: &mut [u8]) {
+    getrandom::fill(destination).expect("operating system random source unavailable");
 }
 
 #[cfg(test)]

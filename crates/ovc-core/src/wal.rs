@@ -240,10 +240,8 @@ pub enum RecoveryResult {
 
 /// Generates a unique operation ID using random bytes formatted as a UUID v4.
 fn generate_operation_id() -> String {
-    use rand::RngCore;
-
     let mut bytes = [0u8; 16];
-    rand::rngs::OsRng.fill_bytes(&mut bytes);
+    crate::crypto::fill_random(&mut bytes);
     bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
     bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant 1
     format!(

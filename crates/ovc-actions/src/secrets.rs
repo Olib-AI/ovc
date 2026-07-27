@@ -20,8 +20,7 @@ use std::path::{Path, PathBuf};
 
 use base64::Engine;
 use chacha20poly1305::XChaCha20Poly1305;
-use chacha20poly1305::aead::{Aead, KeyInit, OsRng};
-use rand::RngCore;
+use chacha20poly1305::aead::{Aead, KeyInit};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
@@ -235,9 +234,13 @@ impl SecretsVault {
         let output = if let Some(ref pw) = passphrase {
             // v2 encrypted format: OVCA || salt(32) || nonce(24) || ciphertext+tag
             let mut salt = [0u8; SALT_SIZE];
-            OsRng.fill_bytes(&mut salt);
+            getrandom::fill(&mut salt).map_err(|e| ActionsError::Config {
+                reason: format!("failed to generate encryption salt: {e}"),
+            })?;
             let mut nonce_bytes = [0u8; NONCE_SIZE];
-            OsRng.fill_bytes(&mut nonce_bytes);
+            getrandom::fill(&mut nonce_bytes).map_err(|e| ActionsError::Config {
+                reason: format!("failed to generate encryption nonce: {e}"),
+            })?;
             let key = derive_key_argon2(pw, &salt)?;
             let cipher = XChaCha20Poly1305::new((&key).into());
             let ciphertext = cipher

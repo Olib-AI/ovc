@@ -224,14 +224,16 @@ impl OvcKeyPair {
     /// Generates a fresh key pair using the OS cryptographic RNG.
     #[must_use]
     pub fn generate() -> Self {
-        let signing_key = SigningKey::generate(&mut rand::rngs::OsRng);
+        let seed = crypto::generate_key();
+        let signing_key = SigningKey::from_bytes(&seed);
         Self::from_signing_key_with_identity(signing_key, None)
     }
 
     /// Generates a fresh key pair with an associated identity.
     #[must_use]
     pub fn generate_with_identity(identity: KeyIdentity) -> Self {
-        let signing_key = SigningKey::generate(&mut rand::rngs::OsRng);
+        let seed = crypto::generate_key();
+        let signing_key = SigningKey::from_bytes(&seed);
         Self::from_signing_key_with_identity(signing_key, Some(identity))
     }
 
@@ -564,7 +566,8 @@ impl OvcPublicKey {
 /// an encryption key via SHA-256, and encrypts the segment key with
 /// XChaCha20-Poly1305.
 pub fn seal_key(segment_key: &[u8; 32], recipient: &OvcPublicKey) -> CoreResult<SealedKey> {
-    let ephemeral_secret = StaticSecret::random_from_rng(rand::rngs::OsRng);
+    let ephemeral_bytes = crypto::generate_key();
+    let ephemeral_secret = StaticSecret::from(*ephemeral_bytes);
     let ephemeral_public = X25519PublicKey::from(&ephemeral_secret);
 
     let shared_secret = ephemeral_secret.diffie_hellman(&recipient.encryption_public);

@@ -9,7 +9,6 @@ use std::sync::mpsc;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
-use rand::RngCore;
 use slint::ComponentHandle;
 use slint::winit_030::WinitWindowAccessor;
 use wry::dpi::{PhysicalPosition, PhysicalSize};
@@ -189,7 +188,7 @@ fn create_webview(
 
 fn desktop_jwt_secret() -> String {
     let mut secret = [0_u8; 32];
-    rand::rngs::OsRng.fill_bytes(&mut secret);
+    getrandom::fill(&mut secret).expect("operating system random source unavailable");
     hex::encode(secret)
 }
 

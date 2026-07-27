@@ -295,10 +295,11 @@ pub struct KeyAuthRequest {
 pub async fn get_challenge(
     State(app): State<Arc<AppState>>,
 ) -> Result<Json<ChallengeResponse>, ApiError> {
-    use rand::RngCore;
-
     let mut challenge_bytes = [0u8; 32];
-    rand::rngs::OsRng.fill_bytes(&mut challenge_bytes);
+    getrandom::fill(&mut challenge_bytes).map_err(|e| {
+        tracing::error!("failed to generate authentication challenge: {e}");
+        ApiError::internal("failed to generate authentication challenge")
+    })?;
 
     let challenge_hex = hex_encode(&challenge_bytes);
 
