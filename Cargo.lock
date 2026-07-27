@@ -3713,7 +3713,7 @@ dependencies = [
  "p256",
  "p384",
  "pem",
- "rand 0.8.5",
+ "rand 0.8.7",
  "rsa",
  "serde",
  "serde_json",
@@ -4216,7 +4216,7 @@ dependencies = [
  "num-integer",
  "num-iter",
  "num-traits",
- "rand 0.8.5",
+ "rand 0.8.7",
  "smallvec",
  "zeroize",
 ]
@@ -4770,7 +4770,7 @@ dependencies = [
  "getrandom 0.3.4",
  "globset",
  "ovc-core",
- "rand 0.8.5",
+ "rand 0.10.2",
  "regex",
  "reqwest",
  "serde",
@@ -4804,7 +4804,7 @@ dependencies = [
  "ovc-cloud",
  "ovc-core",
  "ovc-llm",
- "rand 0.8.5",
+ "rand 0.10.2",
  "rust-embed",
  "serde",
  "serde_json",
@@ -4890,7 +4890,7 @@ dependencies = [
  "globset",
  "hmac 0.13.0",
  "postcard",
- "rand 0.8.5",
+ "rand 0.10.2",
  "regex",
  "serde",
  "serde_json",
@@ -4915,7 +4915,7 @@ dependencies = [
  "objc2-app-kit 0.3.2",
  "objc2-foundation 0.3.2",
  "ovc-api",
- "rand 0.8.5",
+ "rand 0.10.2",
  "serde_json",
  "slint",
  "slint-build",
@@ -5649,9 +5649,9 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 
 [[package]]
 name = "rand"
-version = "0.8.5"
+version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
+checksum = "22f6172bdec972074665ed81ed53b71da00bfc44b65a753cfde883ec4c702a1a"
 dependencies = [
  "libc",
  "rand_chacha 0.3.1",
