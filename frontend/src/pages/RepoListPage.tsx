@@ -6,6 +6,7 @@ import { useRepos, useCreateRepo } from '../hooks/useRepo.ts';
 import { useQueryClient } from '@tanstack/react-query';
 import { RepoListSkeleton } from '../components/Skeleton.tsx';
 import CreateRepoModal from '../components/CreateRepoModal.tsx';
+import Onboarding from '../components/Onboarding.tsx';
 import axios from 'axios';
 
 function RepoListPage() {
@@ -64,6 +65,10 @@ function RepoListPage() {
     );
   }
 
+  if (repos?.length === 0) {
+    return <Onboarding />;
+  }
+
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-6 flex items-start justify-between">
@@ -81,23 +86,6 @@ function RepoListPage() {
           New Repository
         </button>
       </div>
-
-      {repos && repos.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-text-muted">
-          <GitBranch size={48} className="mb-4 text-accent/30" />
-          <p className="text-sm">No repositories found</p>
-          <p className="mt-1 text-xs text-text-muted">
-            Create a new repository to get started
-          </p>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="mt-4 flex items-center gap-1.5 rounded bg-accent px-4 py-2 text-sm font-semibold text-navy-950 transition-colors hover:bg-accent-light"
-          >
-            <Plus size={14} />
-            Create Repository
-          </button>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {repos?.map((repo) => (

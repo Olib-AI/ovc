@@ -1,6 +1,18 @@
-# Web UI & Local LLM Integration
+# Desktop App, Web UI, and Local LLM Integration
 
-OVC includes a single-binary web interface along with integrated local Large Language Model (LLM) assistance.
+OVC provides the same React interface in the native desktop app and in a browser. It also supports local Large Language Model (LLM) assistance.
+
+## Desktop App
+
+Install and open OVC from your operating system like any other application. The desktop executable starts a private API service on an available loopback port, creates a session for its system webview, and loads the embedded React interface. Users do not need to start `ovc serve` or install the CLI.
+
+The desktop app uses the operating system web engine:
+
+- macOS: WKWebView
+- Windows: WebView2
+- Linux: WebKitGTK
+
+New installations show onboarding when the repository directory is empty. The first repository form collects the author name, author email, repository name, and encryption password. The author identity is stored inside the encrypted repository configuration.
 
 ## Web UI
 
@@ -11,7 +23,7 @@ ovc serve --port 9742
 ovc web                    # Opens browser automatically (alias: ovc ui, ovc gui)
 ```
 
-The web UI is compiled directly into the binary, so Node.js is not required in production environments.
+The web UI is compiled directly into both the CLI server binary and the desktop executable, so Node.js is not required in production environments.
 
 ### Features
 

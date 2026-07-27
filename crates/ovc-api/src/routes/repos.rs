@@ -135,15 +135,50 @@ pub async fn create_repo(
             "repository name may only contain alphanumeric characters, hyphens, underscores, and dots",
         ));
     }
+    if req.user_name.as_ref().is_some_and(|name| name.len() > 256) {
+        return Err(ApiError::bad_request(
+            "user_name must not exceed 256 characters",
+        ));
+    }
+    if req
+        .user_email
+        .as_ref()
+        .is_some_and(|email| email.len() > 256)
+    {
+        return Err(ApiError::bad_request(
+            "user_email must not exceed 256 characters",
+        ));
+    }
 
     let repos_dir = app.repos_dir.clone();
     let name = req.name.clone();
     let password = req.password.clone();
+    let user_name = req
+        .user_name
+        .clone()
+        .filter(|value| !value.trim().is_empty())
+        .or_else(|| std::env::var("OVC_AUTHOR_NAME").ok());
+    let user_email = req
+        .user_email
+        .clone()
+        .filter(|value| !value.trim().is_empty())
+        .or_else(|| std::env::var("OVC_AUTHOR_EMAIL").ok());
 
     let info = tokio::task::spawn_blocking(move || -> Result<RepoInfo, ApiError> {
         let ovc_path = repos_dir.join(format!("{name}.ovc"));
-        let repo = ovc_core::repository::Repository::init(&ovc_path, password.as_bytes())
+        let mut repo = ovc_core::repository::Repository::init(&ovc_path, password.as_bytes())
             .map_err(ApiError::from_core)?;
+
+        if user_name.is_some() || user_email.is_some() {
+            let config = repo.config_mut();
+            if let Some(user_name) = user_name {
+                config.user_name = user_name;
+            }
+            if let Some(user_email) = user_email {
+                config.user_email = user_email;
+            }
+            repo.save().map_err(ApiError::from_core)?;
+        }
 
         let head = repo
             .head_ref()

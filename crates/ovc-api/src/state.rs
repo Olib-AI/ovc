@@ -70,6 +70,9 @@ pub struct AppState {
 }
 
 impl AppState {
+    /// Token version assigned to a newly started API instance.
+    pub const INITIAL_TOKEN_VERSION: u64 = 1;
+
     /// Creates a new `AppState` with the given configuration.
     #[must_use]
     pub fn new(
@@ -102,7 +105,7 @@ impl AppState {
             auth_challenges: RwLock::new(HashMap::new()),
             auth_rate_limits: RwLock::new(HashMap::new()),
             repo_stats_cache: RwLock::new(HashMap::new()),
-            token_version: Arc::new(AtomicU64::new(1)),
+            token_version: Arc::new(AtomicU64::new(Self::INITIAL_TOKEN_VERSION)),
             llm_server_config,
         }
     }

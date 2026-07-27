@@ -82,6 +82,20 @@ pub struct ServerConfig {
 pub async fn start_server(
     config: ServerConfig,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let addr = format!("{}:{}", config.bind, config.port);
+    let listener = TcpListener::bind(&addr).await?;
+    start_server_on_listener(config, listener).await
+}
+
+/// Starts the OVC API server on an already-bound listener.
+///
+/// Desktop applications can use this to bind port `0`, discover the assigned
+/// loopback port, and avoid races with other OVC processes. The server blocks
+/// until it is shut down.
+pub async fn start_server_on_listener(
+    config: ServerConfig,
+    listener: TcpListener,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let jwt_secret = match config.jwt_secret {
         Some(s) => s,
         None => load_or_create_persisted_secret(&config.repos_dir)?,
@@ -144,8 +158,7 @@ pub async fn start_server(
         }
     });
 
-    let addr = format!("{}:{}", config.bind, config.port);
-    let listener = TcpListener::bind(&addr).await?;
+    let addr = listener.local_addr()?;
 
     tracing::info!("OVC API server listening on http://{addr}");
 
@@ -415,7 +428,9 @@ mod tests {
         // Create a repo.
         let create_body = serde_json::json!({
             "name": "test-repo",
-            "password": "secret123"
+            "password": "secret123",
+            "user_name": "Test Author",
+            "user_email": "author@example.com"
         });
 
         let response = router
@@ -435,6 +450,23 @@ mod tests {
         assert_eq!(response.status(), StatusCode::CREATED);
         let body = json_body(response).await;
         assert_eq!(body["id"], "test-repo");
+
+        // First-run identity is persisted in the encrypted repository config.
+        let response = router
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/api/v1/repos/test-repo/config")
+                    .header("authorization", format!("Bearer {token}"))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = json_body(response).await;
+        assert_eq!(body["user_name"], "Test Author");
+        assert_eq!(body["user_email"], "author@example.com");
 
         // List repos.
         let response = router

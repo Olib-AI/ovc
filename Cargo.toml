@@ -6,6 +6,7 @@ members = [
     "crates/ovc-api",
     "crates/ovc-actions",
     "crates/ovc-cli",
+    "crates/ovc-desktop",
     "crates/ovc-llm",
     "crates/ovc-remote-helper",
 ]

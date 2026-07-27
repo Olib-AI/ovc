@@ -1,0 +1,42 @@
+export component AppWindow inherits Window {
+    title: "OVC";
+    icon: @image-url("../icons/app-icon.svg");
+    width: 1280px;
+    height: 800px;
+    background: #0a0e1a;
+
+    in property <string> status-message: "Starting OVC…";
+    in property <bool> failed: false;
+
+    Image {
+        source: @image-url("../../../examples/logo.svg");
+        x: (parent.width - self.width) / 2;
+        y: (parent.height / 2) - 110px;
+        width: 72px;
+        height: 72px;
+    }
+
+    Text {
+        x: 24px;
+        y: (parent.height / 2) - 18px;
+        width: parent.width - 48px;
+        height: 36px;
+        text: root.failed ? "OVC could not start" : "OVC";
+        color: #e2e8f0;
+        font-size: 24px;
+        font-weight: 600;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    Text {
+        width: min(parent.width - 48px, 520px);
+        x: (parent.width - self.width) / 2;
+        y: (parent.height / 2) + 34px;
+        text: root.status-message;
+        color: root.failed ? #fb7185 : #64748b;
+        font-size: 13px;
+        horizontal-alignment: center;
+        wrap: word-wrap;
+    }
+}

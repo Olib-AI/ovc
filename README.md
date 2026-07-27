@@ -6,7 +6,7 @@
   <strong>Secure, self-hosted version control: encrypted single-file repositories you can store anywhere.</strong>
 </p>
 <p align="center">
-  Every commit, branch, tag, and file history lives in a single encrypted <code>.ovc</code> blob: Ed25519+X25519 key pair encryption, commit signing & verification, full Git interop, cloud sync via any storage provider, a built-in CI/CD actions engine with 28 built-in checks, local LLM integration for AI-powered commit messages, code review, and diff explanation, plus a premium web UI, all in a <strong>single binary</strong>.
+  Every commit, branch, tag, and file history lives in a single encrypted <code>.ovc</code> blob. Use OVC through the native desktop app, the browser UI, or the CLI. The desktop app includes its local service and works without a separate CLI installation.
 </p>
 <p align="center">
   Built by <a href="https://www.olib.ai">Olib AI</a>
@@ -17,6 +17,7 @@
 ## Documentation
 
 - [Getting Started](docs/getting-started.md): Installation, key generation, and basic workflow
+- [Desktop App](docs/desktop-app.md): Native installers, onboarding, storage, and development
 - [CLI Reference](docs/cli-reference.md): Full command listing, flags, and environment variables
 - [Architecture & Security Model](docs/architecture.md): Repository format, encryption specs, RBAC, and cloud sync safety
 - [Actions Engine](docs/actions-engine.md): Built-in checks, DAG scheduler, and Docker integration
@@ -47,6 +48,7 @@ Modern teams need version control they fully own without giving up the convenien
 - **Git-compatible**: bidirectional import/export with full history fidelity
 - **Built-in Actions Engine**: 28 built-in checks + custom shell commands, parallel execution with DAG dependencies, matrix strategy, secrets vault, retry logic
 - **Local LLM integration**: AI-powered commit messages, PR review, diff explanation, and PR descriptions via any OpenAI-compatible local model (Ollama, LM Studio); multi-pass map-reduce pipeline handles diffs of any size
+- **Native desktop app**: self-contained macOS, Windows, and Linux app with the local service and React UI included
 - **Premium web UI**: commit graph with SVG lanes, split diff viewer, blame view, code search, command palette, commit actions, toast notifications
 - **Single binary**: VCS + crypto + git bridge + cloud sync + actions engine + LLM integration + web server + React UI
 - **Access control (RBAC)**: per-user roles (read, write, admin, owner) with branch protection
@@ -58,6 +60,18 @@ Modern teams need version control they fully own without giving up the convenien
 ## Quick Start
 
 ### Install
+
+#### Desktop app
+
+Download the installer for your platform from [GitHub Releases](https://github.com/Olib-AI/ovc/releases/latest):
+
+- macOS: signed and notarized DMG for Apple Silicon or Intel
+- Windows: MSI installer
+- Linux: DEB package or portable AppImage
+
+Open OVC after installation. The app starts its private local service automatically and guides new users through creating their first encrypted repository. The CLI is not required.
+
+#### CLI
 
 **Linux & macOS:**
 
@@ -106,6 +120,10 @@ cd frontend && npm install && npm run build && cd ..
 
 # Build the binary
 cargo build --release
+
+# Build the native desktop app on the current platform
+cargo install cargo-bundle --version 0.11.0
+cargo bundle --release -p ovc-desktop
 
 # Install
 sudo cp target/release/ovc /usr/local/bin/ovc

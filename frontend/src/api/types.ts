@@ -692,6 +692,13 @@ export interface RepoConfigResponse {
   default_branch: string;
 }
 
+export interface CreateRepoPayload {
+  name: string;
+  password: string;
+  user_name?: string;
+  user_email?: string;
+}
+
 export interface UpdateRepoConfigPayload {
   user_name?: string;
   user_email?: string;

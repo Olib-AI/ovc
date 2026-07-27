@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OVC: Secure Self-Hosted Version Control</title>
-<meta name="description" content="Encrypted single-file version control. Every repo is one encrypted .ovc file you can store anywhere. Ed25519 encryption, Git interop, built-in CI/CD, local LLM integration, web UI, all in a single binary.">
+<meta name="description" content="Encrypted single-file version control for desktop, browser, and CLI. Native apps for macOS, Windows, and Linux include the local OVC service.">
 <meta name="theme-color" content="#0a0e14">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -186,8 +186,27 @@ nav{
 }
 .hero-note a{color:var(--text-secondary);text-decoration:underline;text-decoration-color:var(--border-bright);text-underline-offset:3px}
 .hero-note a:hover{color:var(--cyan)}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:22px}
 
-/* ── Hero visual — animated cipher ─────────────────────────── */
+/* Desktop downloads */
+.download-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+}
+@media(max-width:800px){.download-grid{grid-template-columns:1fr}}
+.download-card{
+  display:flex;flex-direction:column;align-items:flex-start;
+  padding:26px;border:1px solid var(--border);border-radius:12px;
+  background:var(--bg-primary);text-decoration:none;color:var(--text-primary);
+  transition:border-color 0.25s,transform 0.25s,background 0.25s;
+}
+.download-card:hover{border-color:var(--cyan-dim);transform:translateY(-2px);background:var(--bg-elevated)}
+.download-platform{font-size:1rem;font-weight:600;margin-bottom:5px}
+.download-package{font-family:var(--font-mono);font-size:0.72rem;color:var(--cyan);margin-bottom:12px}
+.download-detail{font-size:0.8rem;color:var(--text-secondary);line-height:1.55}
+.download-links{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.download-links span{font-family:var(--font-mono);font-size:0.68rem;color:var(--text-primary);border:1px solid var(--border-bright);padding:5px 8px;border-radius:5px}
+
+/* Hero visual: animated cipher */
 .hero-visual{
   position:absolute;right:-60px;top:140px;
   width:420px;height:420px;opacity:0.08;
@@ -478,10 +497,12 @@ footer{
     <a href="#" class="nav-logo"><svg viewBox="0 0 48 48" fill="none"><path d="M24 2L6 10v12c0 11.1 7.7 21.5 18 24 10.3-2.5 18-12.9 18-24V10L24 2z" fill="#0891b2" opacity="0.15"/><path d="M24 2L6 10v12c0 11.1 7.7 21.5 18 24 10.3-2.5 18-12.9 18-24V10L24 2z" stroke="#0891b2" stroke-width="2" fill="none" stroke-linejoin="round"/><line x1="24" y1="12" x2="24" y2="36" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round"/><path d="M24 18 C20 18 16 22 16 26" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M24 22 C28 22 32 18 32 14" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M16 26 C16 30 20 32 24 32" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="24" cy="12" r="2.5" fill="#0891b2"/><circle cx="24" cy="18" r="2" fill="#0891b2"/><circle cx="24" cy="22" r="2" fill="#0891b2"/><circle cx="32" cy="14" r="2" fill="#06b6d4"/><circle cx="16" cy="26" r="2" fill="#06b6d4"/><circle cx="24" cy="32" r="2" fill="#0891b2"/><circle cx="24" cy="36" r="2.5" fill="#0891b2"/></svg><span>ovc</span></a>
     <div class="nav-links">
       <a href="#features">Features</a>
+      <a href="#download">Download</a>
       <a href="#screenshots">Screenshots</a>
       <a href="#how-it-works">How It Works</a>
       <a href="#security">Security</a>
       <a href="#quickstart">Quick Start</a>
+      <a href="docs.html">Docs</a>
       <a href="https://github.com/Olib-AI/ovc" target="_blank" rel="noopener" class="nav-gh">
         <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         GitHub
@@ -500,13 +521,19 @@ footer{
     <h1>Version control<br>you <span class="gradient">fully own</span></h1>
     <p class="hero-sub">
       Every repository is a single encrypted file you can store on any cloud, NAS, or USB drive.
-      Ed25519 encryption, Git-compatible workflow, built-in CI/CD, and a web UI &mdash; all in one 16&nbsp;MB binary.
+      Use encrypted single-file repositories through a native desktop app, the browser UI, or the CLI.
+      The desktop app includes its local service and is ready after installation.
     </p>
+
+    <div class="hero-actions">
+      <a href="#download" class="btn-primary">Download Desktop App</a>
+      <a href="#quickstart" class="btn-secondary">Install the CLI</a>
+    </div>
 
     <div class="install-block">
       <div class="install-block-header">
         <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-        <span style="margin-left:8px">terminal</span>
+        <span style="margin-left:8px">CLI install</span>
       </div>
       <div class="install-block-body">
         <span class="install-cmd"><span class="dim">$</span> curl -fsSL https://raw.githubusercontent.com/Olib-AI/ovc/main/scripts/install.sh | bash</span>
@@ -527,9 +554,51 @@ footer{
   </div>
 </section>
 
+<section id="download" style="background:var(--bg-primary)">
+  <div class="container">
+    <span class="section-label">Desktop App</span>
+    <h2 class="section-title">Install OVC and start working</h2>
+    <p class="section-desc">
+      The native app includes the OVC service and complete interface. No CLI, daemon, or manual server setup is required.
+    </p>
+    <div class="download-grid">
+      <div class="download-card">
+        <div class="download-platform">macOS</div>
+        <div class="download-package">Signed and notarized DMG</div>
+        <div class="download-detail">Choose the build for Apple Silicon or Intel Macs.</div>
+        <div class="download-links">
+          <a class="btn-secondary" href="https://github.com/Olib-AI/ovc/releases/latest/download/ovc-desktop-macos-arm64.dmg">Apple Silicon</a>
+          <a class="btn-secondary" href="https://github.com/Olib-AI/ovc/releases/latest/download/ovc-desktop-macos-amd64.dmg">Intel</a>
+        </div>
+      </div>
+      <div class="download-card">
+        <div class="download-platform">Windows</div>
+        <div class="download-package">64-bit MSI installer</div>
+        <div class="download-detail">Install OVC from the standard Windows installer.</div>
+        <div class="download-links">
+          <a class="btn-secondary" href="https://github.com/Olib-AI/ovc/releases/latest/download/ovc-desktop-windows-amd64.msi">Download MSI</a>
+        </div>
+      </div>
+      <div class="download-card">
+        <div class="download-platform">Linux</div>
+        <div class="download-package">DEB or portable AppImage</div>
+        <div class="download-detail">Install the Debian package or run the portable application.</div>
+        <div class="download-links">
+          <a class="btn-secondary" href="https://github.com/Olib-AI/ovc/releases/latest/download/ovc-desktop-linux-amd64.deb">Download DEB</a>
+          <a class="btn-secondary" href="https://github.com/Olib-AI/ovc/releases/latest/download/ovc-desktop-linux-amd64.AppImage">AppImage</a>
+        </div>
+      </div>
+    </div>
+    <p class="hero-note" style="margin-top:20px">
+      Prefer the terminal? The CLI remains available for local workflows, automation, and servers.
+      <a href="#quickstart">View CLI setup</a>.
+    </p>
+  </div>
+</section>
+
 <!-- ── Stats ────────────────────────────────────────────────── -->
 <div class="stats">
-  <div class="stat"><div class="stat-value">22 MB</div><div class="stat-label">Single Binary</div></div>
+  <div class="stat"><div class="stat-value">3</div><div class="stat-label">Desktop Platforms</div></div>
   <div class="stat"><div class="stat-value">47</div><div class="stat-label">CLI Commands</div></div>
   <div class="stat"><div class="stat-value">26</div><div class="stat-label">Built-in CI Checks</div></div>
   <div class="stat"><div class="stat-value">200+</div><div class="stat-label">Tests</div></div>
@@ -558,7 +627,7 @@ footer{
           <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         </div>
         <h3>Single portable file</h3>
-        <p>Your entire repo &mdash; code, branches, tags, history &mdash; lives in one .ovc file you can drop anywhere.</p>
+        <p>Your entire repo, including code, branches, tags, and history, lives in one .ovc file you can drop anywhere.</p>
       </div>
 
       <div class="feature-card fade-in">
@@ -605,8 +674,8 @@ footer{
         <div class="feature-icon">
           <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </div>
-        <h3>Premium web UI</h3>
-        <p>Commit graph, split diff viewer, blame view, code search, command palette. Embedded in the binary.</p>
+        <h3>Native desktop app</h3>
+        <p>Install on macOS, Windows, or Linux. The local service and complete interface are included.</p>
       </div>
 
       <div class="feature-card fade-in">
@@ -621,8 +690,8 @@ footer{
         <div class="feature-icon">
           <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
         </div>
-        <h3>Single binary</h3>
-        <p>VCS + crypto + git bridge + cloud sync + CI engine + LLM integration + web server + React UI. No runtime dependencies.</p>
+        <h3>CLI and web access</h3>
+        <p>Use the same repository format from the terminal or host the embedded React UI in a browser.</p>
       </div>
     </div>
   </div>
@@ -631,10 +700,10 @@ footer{
 <!-- ── Screenshots ──────────────────────────────────────────── -->
 <section id="screenshots" style="background:var(--bg-primary)">
   <div class="container">
-    <span class="section-label">Web UI</span>
-    <h2 class="section-title">A premium interface, embedded in the binary</h2>
+    <span class="section-label">Desktop and Web UI</span>
+    <h2 class="section-title">One polished interface, available everywhere</h2>
     <p class="section-desc">
-      No Node.js required in production. The entire React UI compiles into the binary and serves on localhost.
+      The desktop app opens the embedded React UI in the operating system webview. Browser access remains available through the CLI server.
     </p>
 
     <div class="screenshots-grid">
@@ -684,7 +753,7 @@ footer{
 
       <div class="step fade-in">
         <h3>Commit and collaborate</h3>
-        <p>Stage, commit, branch, merge &mdash; the full Git workflow you already know, fully encrypted.</p>
+        <p>Stage, commit, branch, and merge with the familiar Git workflow, fully encrypted.</p>
         <code>ovc add .
 ovc commit -m "initial commit"
 ovc log --oneline --graph</code>
@@ -835,14 +904,17 @@ ovc log --oneline --graph</code>
 <section class="cta">
   <div class="container" style="position:relative;z-index:1">
     <h2>Start owning your code</h2>
-    <p>Open source. MIT licensed. One command to install.</p>
+    <p>Open source. MIT licensed. Native desktop apps and a complete CLI.</p>
     <div class="cta-buttons">
       <a href="https://github.com/Olib-AI/ovc" target="_blank" rel="noopener" class="btn-primary">
         <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         View on GitHub
       </a>
-      <a href="#quickstart" class="btn-secondary">
-        Quick Start
+      <a href="#download" class="btn-secondary">
+        Download Desktop
+      </a>
+      <a href="docs.html" class="btn-secondary">
+        Read the Docs
       </a>
     </div>
   </div>
@@ -855,6 +927,7 @@ ovc log --oneline --graph</code>
       &copy; 2025 <a href="https://www.olib.ai" target="_blank" rel="noopener">Olib AI</a> &middot; MIT License
     </div>
     <div class="footer-right">
+      <a href="docs.html">Documentation</a>
       <a href="https://github.com/Olib-AI/ovc" target="_blank" rel="noopener">GitHub</a>
       <a href="https://github.com/Olib-AI/ovc/issues" target="_blank" rel="noopener">Issues</a>
       <a href="https://www.olib.ai" target="_blank" rel="noopener">Olib AI</a>

@@ -12,12 +12,21 @@ crates/
   ovc-api/            REST API server: Axum-based, embedded React UI
   ovc-actions/        Actions/CI engine: 28 built-in checks, DAG scheduler, Docker
   ovc-llm/            Local LLM integration: multi-pass context builder, SSE streaming
+  ovc-desktop/        Slint desktop shell: embedded API service and system webview
   ovc-cli/            CLI: 47 commands, Clap-based
   ovc-remote-helper/  Git remote helper stub
 
 frontend/             React 19 + TypeScript + Tailwind CSS + Vite (embedded into binary)
 docker/               Docker image for actions execution
 ```
+
+## Desktop Architecture
+
+The desktop app is a self-contained executable. It links the API crate directly, embeds the compiled React assets, and starts the service on a random loopback port. A private per-launch session is injected into the child webview before the UI loads.
+
+Slint owns the native application window. Wry attaches the operating system webview as a child and keeps it sized to the window. The app uses WKWebView on macOS, WebView2 on Windows, and WebKitGTK on Linux.
+
+The CLI remains a separate release artifact for terminal workflows and server deployments. The desktop app does not spawn the CLI or depend on an external daemon.
 
 ## Security Model
 

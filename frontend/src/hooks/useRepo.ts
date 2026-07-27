@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as api from '../api/client.ts';
 import type {
   CreateCommentPayload,
+  CreateRepoPayload,
   CreatePullRequestPayload,
   CreateReviewPayload,
   GrantAccessPayload,
@@ -126,8 +127,7 @@ export function useCreateRepo() {
   const qc = useQueryClient();
   return useMutation({
     gcTime: 0,
-    mutationFn: ({ name, password }: { name: string; password: string }) =>
-      api.createRepo(name, password),
+    mutationFn: (payload: CreateRepoPayload) => api.createRepo(payload),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['repos'] });
     },

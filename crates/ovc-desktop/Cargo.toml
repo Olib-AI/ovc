@@ -1,0 +1,59 @@
+[package]
+name = "ovc-desktop"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Native Slint desktop shell for the OVC web interface"
+build = "build.rs"
+
+[[bin]]
+name = "ovc-desktop"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+dirs = { workspace = true }
+hex = { workspace = true }
+ovc-api = { workspace = true }
+rand = { workspace = true }
+serde_json = { workspace = true }
+slint = { version = "1.17", default-features = false, features = [
+    "backend-winit",
+    "compat-1-2",
+    "raw-window-handle-06",
+    "renderer-software",
+    "unstable-winit-030",
+] }
+tokio = { workspace = true }
+wry = "0.55"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+objc2-app-kit = { version = "0.3", default-features = false, features = ["NSApplication", "NSImage"] }
+objc2-foundation = { version = "0.3", default-features = false, features = ["NSData"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+gtk = "0.18"
+
+[build-dependencies]
+slint-build = "1.17"
+winresource = "0.1"
+
+[package.metadata.bundle]
+name = "OVC"
+identifier = "ai.olib.ovc"
+short_description = "Standalone, encrypted version control"
+long_description = "OVC is a standalone, encrypted version control application with a native desktop shell and an embedded local service."
+category = "Developer Tool"
+icon = [
+    "crates/ovc-desktop/icons/app-icon.svg",
+    "crates/ovc-desktop/icons/32x32.png",
+    "crates/ovc-desktop/icons/128x128.png",
+    "crates/ovc-desktop/icons/128x128@2x.png",
+    "crates/ovc-desktop/icons/1024x1024.png",
+    "crates/ovc-desktop/icons/icon.ico",
+]
+resources = ["examples/logo.svg"]
+deb_depends = ["libgtk-3-0", "libwebkit2gtk-4.1-0"]
+osx_minimum_system_version = "12.0"

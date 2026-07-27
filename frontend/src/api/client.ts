@@ -14,6 +14,7 @@ import type {
   CommitInfo,
   CommitLog,
   CompareResponse,
+  CreateRepoPayload,
   CreateCommentPayload,
   CreatePullRequestPayload,
   CreateReviewPayload,
@@ -186,8 +187,8 @@ export async function listRepos(): Promise<RepoInfo[]> {
   return data;
 }
 
-export async function createRepo(name: string, password: string): Promise<RepoInfo> {
-  const { data } = await api.post<RepoInfo>('/repos', { name, password });
+export async function createRepo(payload: CreateRepoPayload): Promise<RepoInfo> {
+  const { data } = await api.post<RepoInfo>('/repos', payload);
   return data;
 }
 

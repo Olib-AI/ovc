@@ -4,19 +4,38 @@ Welcome to OVC (Olib Version Control). This guide will help you install OVC, gen
 
 ## Installation
 
-### Linux & macOS
+### Desktop App
+
+Download the latest desktop installer from the [OVC releases page](https://github.com/Olib-AI/ovc/releases/latest):
+
+| Platform | Package |
+|----------|---------|
+| macOS Apple Silicon | `ovc-desktop-macos-arm64.dmg` |
+| macOS Intel | `ovc-desktop-macos-amd64.dmg` |
+| Windows | `ovc-desktop-windows-amd64.msi` |
+| Linux | `ovc-desktop-linux-amd64.deb` or `ovc-desktop-linux-amd64.AppImage` |
+
+The desktop app contains the local OVC service and the complete web interface. It does not require the CLI, a background daemon, Node.js, or a separately configured server.
+
+On first launch, OVC opens an onboarding screen where you enter your commit identity and create your first encrypted repository. Later launches open the repository list directly.
+
+See the [Desktop App Guide](desktop-app.md) for storage locations, runtime requirements, and development instructions.
+
+### CLI
+
+#### Linux & macOS
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Olib-AI/ovc/main/scripts/install.sh | bash
 ```
 
-### Windows (PowerShell)
+#### Windows (PowerShell)
 
 ```powershell
 irm https://raw.githubusercontent.com/Olib-AI/ovc/main/scripts/install.ps1 | iex
 ```
 
-### Installer Options
+#### Installer Options
 
 | Option | Description |
 |--------|-------------|

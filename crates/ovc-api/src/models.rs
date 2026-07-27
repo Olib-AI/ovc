@@ -42,6 +42,12 @@ pub struct CreateRepoRequest {
     pub name: String,
     /// Encryption password.
     pub password: String,
+    /// Default commit author name. Falls back to `OVC_AUTHOR_NAME`.
+    #[serde(default)]
+    pub user_name: Option<String>,
+    /// Default commit author email. Falls back to `OVC_AUTHOR_EMAIL`.
+    #[serde(default)]
+    pub user_email: Option<String>,
 }
 
 /// Request body for unlocking a repository.
