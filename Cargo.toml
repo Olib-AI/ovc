@@ -79,7 +79,7 @@ tower = "0.5"
 tower-http = { version = "0.7", features = ["cors", "compression-full", "trace", "set-header"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-jsonwebtoken = { version = "10", features = ["rust_crypto"] }
+jsonwebtoken = { version = "11", features = ["rust_crypto"] }
 
 # Static file embedding
 rust-embed = "8"
