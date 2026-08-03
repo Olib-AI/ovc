@@ -4751,7 +4751,7 @@ dependencies = [
  "chacha20poly1305",
  "chrono",
  "futures",
- "getrandom 0.3.4",
+ "getrandom 0.4.2",
  "globset",
  "ovc-core",
  "rand 0.10.2",
@@ -4779,7 +4779,7 @@ dependencies = [
  "ed25519-dalek",
  "flate2",
  "futures",
- "getrandom 0.3.4",
+ "getrandom 0.4.2",
  "hmac 0.13.0",
  "http-body-util",
  "jsonwebtoken",
@@ -4870,7 +4870,7 @@ dependencies = [
  "curve25519-dalek",
  "dirs",
  "ed25519-dalek",
- "getrandom 0.3.4",
+ "getrandom 0.4.2",
  "globset",
  "hmac 0.13.0",
  "postcard",
@@ -4892,7 +4892,7 @@ version = "0.2.3"
 dependencies = [
  "anyhow",
  "dirs",
- "getrandom 0.3.4",
+ "getrandom 0.4.2",
  "gtk",
  "hex",
  "objc2 0.6.4",
@@ -6750,7 +6750,7 @@ version = "0.8.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c1c97747dbf44bb1ca44a561ece23508e99cb592e862f22222dcf42f51d1e451"
 dependencies = [
- "heck 0.5.0",
+ "heck 0.4.1",
  "proc-macro2",
  "quote",
  "syn 2.0.117",
