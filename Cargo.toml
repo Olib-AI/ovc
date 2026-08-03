@@ -44,7 +44,7 @@ hmac = "0.13"
 # Asymmetric cryptography
 ed25519-dalek = { version = "2", features = ["rand_core"] }
 x25519-dalek = { version = "2", features = ["static_secrets"] }
-curve25519-dalek = { version = "4", features = ["digest"] }
+curve25519-dalek = { version = "5", features = ["digest"] }
 
 # Encoding
 hex = "0.4"
