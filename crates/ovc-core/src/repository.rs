@@ -2024,7 +2024,7 @@ mod tests {
 
         // Re-open should succeed.
         let repo2 = Repository::open(&ovc_path, b"pw").unwrap();
-        assert!(repo2.object_count() == 0);
+        assert_eq!(repo2.object_count(), 0);
     }
 
     #[test]

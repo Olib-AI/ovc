@@ -646,6 +646,5 @@ fn glob_match(pattern: &str, text: &str) -> bool {
     globset::GlobBuilder::new(pattern)
         .literal_separator(true)
         .build()
-        .ok()
-        .is_some_and(|g| g.compile_matcher().is_match(text))
+        .is_ok_and(|g| g.compile_matcher().is_match(text))
 }
