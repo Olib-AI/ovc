@@ -267,7 +267,7 @@ fn glob_match_bytes(pattern: &[u8], text: &[u8]) -> bool {
 }
 
 /// Simple glob match without `**` handling: `*` matches non-slash, `?` matches one non-slash.
-fn simple_glob_match(pattern: &[u8], text: &[u8]) -> bool {
+const fn simple_glob_match(pattern: &[u8], text: &[u8]) -> bool {
     let mut pat_pos = 0usize;
     let mut txt_pos = 0usize;
     let mut saved_pat = usize::MAX;

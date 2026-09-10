@@ -193,6 +193,7 @@ pub fn validate_jwt(
 impl FromRequestParts<Arc<AppState>> for Claims {
     type Rejection = ApiError;
 
+    #[allow(clippy::unused_async_trait_impl)]
     async fn from_request_parts(
         parts: &mut Parts,
         state: &Arc<AppState>,
