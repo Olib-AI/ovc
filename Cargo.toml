@@ -48,7 +48,7 @@ curve25519-dalek = { version = "4", features = ["digest"] }
 
 # Encoding
 hex = "0.4"
-base64 = "0.22"
+base64 = "0.23"
 
 # Filesystem
 walkdir = "2"
