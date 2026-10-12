@@ -52,7 +52,7 @@ base64 = "0.23"
 
 # Filesystem
 walkdir = "2"
-dirs = "6"
+dirs = "7"
 
 # Error handling
 thiserror = "2"

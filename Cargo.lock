@@ -1428,7 +1428,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d045de693cb712d0b22c6a64be5b953f67b3ce00ab5ad3dd5d8b441886ab8e1a"
 dependencies = [
  "quote",
- "syn 2.0.117",
+ "syn 3.0.3",
 ]
 
 [[package]]
@@ -1605,15 +1605,6 @@ dependencies = [
  "const-oid 0.10.2",
  "crypto-common 0.2.2",
  "ctutils",
-]
-
-[[package]]
-name = "dirs"
-version = "6.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c3e8aa94d75141228480295a7d0e7feb620b1a5ad9f12bc40be62411e38cce4e"
-dependencies = [
- "dirs-sys",
 ]
 
 [[package]]
@@ -4846,7 +4837,7 @@ dependencies = [
  "clap",
  "console",
  "dialoguer",
- "dirs 6.0.0",
+ "dirs",
  "ovc-actions",
  "ovc-api",
  "ovc-cloud",
@@ -4897,7 +4888,7 @@ dependencies = [
  "chacha20poly1305",
  "chrono",
  "curve25519-dalek 5.0.0",
- "dirs 6.0.0",
+ "dirs",
  "ed25519-dalek 3.0.0",
  "getrandom 0.4.3",
  "globset",
@@ -4920,7 +4911,7 @@ name = "ovc-desktop"
 version = "0.2.3"
 dependencies = [
  "anyhow",
- "dirs 6.0.0",
+ "dirs",
  "getrandom 0.4.3",
  "gtk",
  "hex",
@@ -8778,7 +8769,7 @@ dependencies = [
  "block2 0.6.2",
  "cookie",
  "crossbeam-channel",
- "dirs 7.0.0",
+ "dirs",
  "dom_query",
  "dpi",
  "dunce",
