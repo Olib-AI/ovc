@@ -20,7 +20,7 @@
     "@vitejs/plugin-react": "^6.0.5",
     "eslint": "^10.8.0",
     "eslint-plugin-react-hooks": "7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.2",
+    "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^17.8.0",
     "tailwindcss": "^4.2.4",
     "typescript": "~7.0.2",
