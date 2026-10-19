@@ -4764,7 +4764,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-actions"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "argon2",
  "base64 0.23.1",
@@ -4790,7 +4790,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-api"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "axum",
  "base64 0.23.1",
@@ -4829,7 +4829,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-cli"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -4860,7 +4860,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-cloud"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "async-trait",
  "bytes",
@@ -4880,7 +4880,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-core"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "argon2",
  "base64 0.23.1",
@@ -4908,7 +4908,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-desktop"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "anyhow",
  "dirs",
@@ -4930,7 +4930,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-git"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "flate2",
  "hex",
@@ -4945,7 +4945,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-llm"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "bytes",
  "futures",
@@ -4960,7 +4960,7 @@ dependencies = [
 
 [[package]]
 name = "ovc-remote-helper"
-version = "0.2.3"
+version = "0.2.4"
 
 [[package]]
 name = "owned_ttf_parser"
